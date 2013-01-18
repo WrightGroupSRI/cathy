@@ -33,50 +33,57 @@ def readHeader(fp):
     fov = struct.unpack('>d',hdr[12:20])[0]
     return (xsize,ysize,zsize,fov)
 
-# fts: all the fourier-transformed projections in one array; x, y, and z each are in their own row
-# frame: which projection to show
-def showProj(fts,frame,tick_locs,tick_labels,xres,mode="magnitude"):
-  index = frame*3
-  #print "Index " + str(index)
-  axis = {0:'X',1:'Y',2:'Z'}
-  if len(fts) < index+3 or index < 0:
-    print "Frame " + str(frame) + " does not exist"
-    return
-
-  for i in range(0,3):
-    #pylab.subplot('23'+str(i+1))
-    #pylab.plot(raw[index+1]);pylab.title(axis[i] + ' Raw projection')
-    axes=pylab.subplot('13'+str(1+i))
-    if (mode == "phase"):
-      pylab.plot(scipy.angle(fts[index+i]));pylab.title(axis[i] + ' Phase Projection');pylab.xticks(tick_locs,tick_labels)
-    else:
-      mag = abs(fts[index+i])
-      peak = max(mag)
-      peakInd = list(mag).index(peak)
-      pylab.plot(mag);pylab.title(axis[i] + ' Magnitude Projection');
-      pylab.ylim([0,150]);
-      axes.set_autoscaley_on(False);
-      pylab.xticks(tick_locs,tick_labels); 
-      pylab.stem([peakInd],[peak],'r-','ro');
-      pylab.xlabel(axis[i]+':'+'{0:.3}'.format(xres*(peakInd-len(mag)/2))+' mm')
-
-  pylab.draw()
-
-def makeTicks(xsize, fov, tickDistance):
-    zeroPixel = (xsize+1)/2.0
-    tickIncr = tickDistance/(fov/xsize)
-    numTicks = int(math.floor(xsize / tickIncr))
-    tick_locs = []
-    tick_labels = []
-    currLabel = -1*fov/2.0
-    currLoc = 0
-    for i in range(0,numTicks):
-        tick_labels.append(str(currLabel))
-        currLabel += tickDistance
-        tick_locs.append(currLoc)
-        currLoc += tickIncr
-    return tick_locs,tick_labels
+class ProjectionPlot:
+    def __init__(self,fts,xsize,fov,mode='magnitude',tickDistance=100):
+        self.fts = fts
+        self.xsize = xsize
+        self.fov = fov
+        self.mode = mode
+        self.tickDistance = tickDistance
+        self.makeTicks()
         
+    def showProj(self,frame):
+      # fts: all the fourier-transformed projections in one array; x, y, and z each are in their own row
+      # frame: which projection to show
+      index = frame*3
+      #print "Index " + str(index)
+      axis = {0:'X',1:'Y',2:'Z'}
+      if len(self.fts) < index+3 or index < 0:
+        print "Frame " + str(frame) + " does not exist"
+        return
+    
+      for i in range(0,3):
+        axes=pylab.subplot('13'+str(1+i))
+        if (self.mode == "phase"):
+          pylab.plot(scipy.angle(self.fts[index+i]));pylab.title(axis[i] + ' Phase Projection');pylab.xticks(self.tick_locs,self.tick_labels)
+        else:
+          mag = abs(self.fts[index+i])
+          peak = max(mag)
+          peakInd = list(mag).index(peak)
+          pylab.plot(mag);pylab.title(axis[i] + ' Magnitude Projection');
+          pylab.ylim([0,150]);
+          axes.set_autoscaley_on(False);
+          pylab.xticks(self.tick_locs,self.tick_labels); 
+          pylab.stem([peakInd],[peak],'r-','ro');
+          xres = self.fov/self.xsize
+          pylab.xlabel(axis[i]+':'+'{0:.3}'.format(xres*(peakInd-len(mag)/2))+' mm')
+    
+      pylab.draw()
+    
+    def makeTicks(self):
+        zeroPixel = (self.xsize+1)/2.0
+        tickIncr = self.tickDistance/(self.fov/self.xsize)
+        numTicks = int(math.floor(self.xsize / tickIncr))
+        self.tick_locs = []
+        self.tick_labels = []
+        currLabel = -1*self.fov/2.0
+        currLoc = 0
+        for i in range(0,numTicks):
+            self.tick_labels.append(str(currLabel))
+            currLabel += self.tickDistance
+            self.tick_locs.append(currLoc)
+            currLoc += tickIncr
+            
 
 def main(rawFile=None):
     if rawFile is None:
@@ -129,22 +136,11 @@ def main(rawFile=None):
         projRaw.append(axis)
     print "Num ffts " + str(len(fts))
 
-    tickLocs,tickLabels = makeTicks(xsize,fieldOfView,100)
     plotnum = 0
     pylab.ion()
     pylab.figure(plotnum)
-    showProj(fts,0,tickLocs,tickLabels,fieldOfView/xsize)
-    done = False
-    while not done:
-      print "Enter projection to show: ",
-      ans = sys.stdin.readline()
-      ans=ans.strip()
-      if (len(ans) == 0):
-        pylab.show()
-        sys.exit(0)
-      plotnum += 1
-      pylab.figure(plotnum)
-      showProj(fts,int(ans),tickLocs,tickLabels,fieldOfView/xsize)
+    plotter = ProjectionPlot(fts,xsize,fieldOfView)
+    plotter.showProj(0)
       
 if __name__ == "__main__":
     main(*sys.argv[1:])
