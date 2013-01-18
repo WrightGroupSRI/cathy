@@ -1,6 +1,16 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """ Read and plot catheter raw data from RthReconImageExporter
+
+    Reads a single raw data file exported from RTHawk. This is assumed to be a catheter
+    projection file. The first projection is plotted and subsequent projections can
+    be selected for plotting.
+    
+    Usage:
+        ./readRthRaw.py data/file-0000.projections
+    
+        readRthRaw.main("data/file-0000.projections")
+        
 """
 
 import sys, struct
@@ -10,9 +20,6 @@ import scipy.fftpack
 import pylab
 
 float_bytes = 8 #These are being written on a 64-bit system
-
-def usage():
-    return "Usage: " + sys.argv[0] + " rawFile"
 
 def readHeader(fp):
   hdr = fp.read(20) # 3 32-bit ints + 1 64-bit float = 20 bytes
@@ -73,7 +80,7 @@ def makeTicks(xsize, fov, tickDistance):
 
 def main(rawFile=None):
     if rawFile is None:
-        print usage()
+        print __doc__
         sys.exit(0)
     fp = open(rawFile,"rb")
 
