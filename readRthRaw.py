@@ -45,12 +45,16 @@ class ProjectionPlot:
         self.index = 0
         self.plots = []
         self.axis = {0:'X',1:'Y',2:'Z'}
+        self.stemMarkers = []
+        self.stemBase = []
+        self.stemLines = []
         
     def showProj(self,frame):
       # fts: all the fourier-transformed projections in one array; x, y, and z each are in their own row
       # frame: which projection to show
       self.index = frame*3
       del self.plots[:]
+      self.clearStems()
       #print "Index " + str(index)
       if len(self.fts) < self.index+3 or self.index < 0:
         print "Frame " + str(frame) + " does not exist"
@@ -71,7 +75,10 @@ class ProjectionPlot:
           pylab.ylim([0,150]);
           axes.set_autoscaley_on(False);
           pylab.xticks(self.tick_locs,self.tick_labels); 
-          pylab.stem([peakInd],[peak],'r-','ro');
+          stem_marker, stem_lines, stem_base = pylab.stem([peakInd],[peak],'r-','ro');
+          self.stemMarkers.append(stem_marker)
+          self.stemBase.append(stem_base)
+          self.stemLines.append(stem_lines)
           xres = self.fov/self.xsize
           pylab.xlabel(self.axis[i]+':'+'{0:.3}'.format(xres*(peakInd-len(mag)/2))+' mm')
     
@@ -91,7 +98,20 @@ class ProjectionPlot:
             self.tick_locs.append(currLoc)
             currLoc += tickIncr
 
+    def clearStems(self):
+        for marker in self.stemMarkers:
+            marker.remove()
+        for base in self.stemBase:
+            base.remove()
+        for line in self.stemLines:
+            line[0].remove()
+
+        del self.stemMarkers[:]
+        del self.stemBase[:]
+        del self.stemLines[:]
+
     def redraw(self):
+        self.clearStems()
         for i in range(0,3):
             axes = pylab.subplot('13'+str(1+i))
             if (self.mode == "phase"):
@@ -101,7 +121,10 @@ class ProjectionPlot:
                 self.plots[i][0].set_ydata(mag)
                 peak = max(mag)
                 peakInd = list(mag).index(peak)
-                pylab.stem([peakInd],[peak],'r-','ro');
+                stem_marker, stem_lines, stem_base = pylab.stem([peakInd],[peak],'r-','ro');
+                self.stemMarkers.append(stem_marker)
+                self.stemBase.append(stem_base)
+                self.stemLines.append(stem_lines)
                 xres = self.fov/self.xsize
                 pylab.xlabel(self.axis[i]+':'+'{0:.3}'.format(xres*(peakInd-len(mag)/2))+' mm')
             pylab.draw()
