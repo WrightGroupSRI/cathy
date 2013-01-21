@@ -93,10 +93,9 @@ class ProjectionPlot:
 
     def redraw(self):
         for i in range(0,3):
-            pylab.subplot('13'+str(1+i))
+            axes = pylab.subplot('13'+str(1+i))
             if (self.mode == "phase"):
                 self.plots[i][0].set_ydata(scipy.angle(self.fts[self.index+i]))
-                pylab.draw()
             else:
                 mag = abs(self.fts[self.index+i])
                 self.plots[i][0].set_ydata(mag)
@@ -105,7 +104,7 @@ class ProjectionPlot:
                 pylab.stem([peakInd],[peak],'r-','ro');
                 xres = self.fov/self.xsize
                 pylab.xlabel(self.axis[i]+':'+'{0:.3}'.format(xres*(peakInd-len(mag)/2))+' mm')
-                pylab.draw()
+            pylab.draw()
 
     def next(self,event):
         self.index += 3
