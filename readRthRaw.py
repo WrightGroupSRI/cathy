@@ -5,11 +5,16 @@
     Reads a single raw data file exported from RTHawk. This is assumed to be a catheter
     projection file. The first projection is plotted and subsequent projections can
     be selected for plotting.
+
+    Putting another argument (any string) after the first one will enable batch saving of
+    plots to png files rather than showing the interactive plotting GUI.
     
     Usage:
         ./readRthRaw.py data/file-0000.projections
     
         readRthRaw.main("data/file-0000.projections")
+
+        ./readRthRaw.py data/file-0000.projections save
         
 """
 
@@ -49,7 +54,7 @@ class ProjectionPlot:
         self.stemBase = []
         self.stemLines = []
         
-    def showProj(self,frame):
+    def showProj(self,frame, saveToFiles=False):
       # fts: all the fourier-transformed projections in one array; x, y, and z each are in their own row
       # frame: which projection to show
       self.index = frame*3
@@ -59,7 +64,8 @@ class ProjectionPlot:
       if len(self.fts) < self.index+3 or self.index < 0:
         print "Frame " + str(frame) + " does not exist"
         return
-    
+      if saveToFiles:
+        pylab.figure(figsize=(13,6))
       for i in range(0,3):
         axes=pylab.subplot('13'+str(1+i))
         pylab.subplots_adjust(bottom=0.2)
@@ -81,9 +87,14 @@ class ProjectionPlot:
           self.stemLines.append(stem_lines)
           xres = self.fov/self.xsize
           pylab.xlabel(self.axis[i]+':'+'{0:.3}'.format(xres*(peakInd-len(mag)/2))+' mm')
-    
-      pylab.draw()
-    
+      if saveToFiles:
+        pylab.savefig('proj{0:04d}.png'.format(frame))
+        self.clearStems()
+        pylab.clf()
+        pylab.close()
+      else:
+        pylab.draw()
+        
     def makeTicks(self):
         zeroPixel = (self.xsize+1)/2.0
         tickIncr = self.tickDistance/(self.fov/self.xsize)
@@ -139,11 +150,12 @@ class ProjectionPlot:
         self.index = self.index % len(self.fts)
         self.redraw()
         
-def main(rawFile=None):
+def main(rawFile=None, saveOpt=""):
     if rawFile is None:
         print __doc__
         sys.exit(0)
     fp = open(rawFile,"rb")
+    saveToFiles = len(saveOpt) != 0
 
     done = False
     projections = [] # array of tuples, where each tuple is a series of complex floats
@@ -191,15 +203,21 @@ def main(rawFile=None):
     print "Num ffts " + str(len(fts))
 
     plotter = ProjectionPlot(fts,xsize,fieldOfView)
-    plotter.showProj(0)
-    axprev = pylab.axes([0.7, 0.02, 0.1, 0.075])
-    axnext = pylab.axes([0.81, 0.02, 0.1, 0.075])
-    bnext = Button(axnext, 'Next')
-    bnext.on_clicked(plotter.next)
-    bprev = Button(axprev, 'Previous')
-    bprev.on_clicked(plotter.prev)
-    
-    pylab.show()
+
+    #Save to files:
+    if saveToFiles:
+      for i in range(len(projComplex)):
+        plotter.showProj(i,True)
+    else:
+      plotter.showProj(0)
+      axprev = pylab.axes([0.7, 0.02, 0.1, 0.075])
+      axnext = pylab.axes([0.81, 0.02, 0.1, 0.075])
+      bnext = Button(axnext, 'Next')
+      bnext.on_clicked(plotter.next)
+      bprev = Button(axprev, 'Previous')
+      bprev.on_clicked(plotter.prev)
+
+      pylab.show()
     
     sys.exit(0)
     
