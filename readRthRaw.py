@@ -165,7 +165,7 @@ def main(rawFile=None):
       projSize = xs*ys*zs*2
       projByteSize = projSize*float_bytes
       proj = fp.read(projByteSize)
-      if not proj:
+      if proj is None or len(proj) < projByteSize:
         print "Could not read projection " + str(projNum) + " stopping here."
         break
       projections.append( struct.unpack('>'+str(projSize)+'d',proj[0:projByteSize]) )
