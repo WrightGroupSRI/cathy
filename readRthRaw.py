@@ -210,6 +210,8 @@ def main(rawFile=None, saveOpt=""):
     if saveToFiles and len(fts) > 0:
       for i in range(len(projComplex)):
         plotter.showProj(i,True)
+        sys.stdout.write("\rSaved projection %i" % i)
+        sys.stdout.flush()
     elif len(fts) > 0:
       plotter.showProj(0)
       axprev = pylab.axes([0.7, 0.02, 0.1, 0.075])
