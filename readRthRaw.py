@@ -78,7 +78,7 @@ class ProjectionPlot:
           peakInd = list(mag).index(peak)
           self.plots.append( pylab.plot(mag) )
           pylab.title(self.axis[i] + ' Magnitude Projection');
-          pylab.ylim([0,150]);
+          pylab.ylim([0,30]);
           axes.set_autoscaley_on(False);
           pylab.xticks(self.tick_locs,self.tick_labels); 
           stem_marker, stem_lines, stem_base = pylab.stem([peakInd],[peak],'r-','ro');
@@ -212,6 +212,7 @@ def main(rawFile=None, saveOpt=""):
         plotter.showProj(i,True)
         sys.stdout.write("\rSaved projection %i" % i)
         sys.stdout.flush()
+      print "\nDone."
     elif len(fts) > 0:
       plotter.showProj(0)
       axprev = pylab.axes([0.7, 0.02, 0.1, 0.075])
