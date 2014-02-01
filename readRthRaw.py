@@ -6,16 +6,16 @@
     projection file. The first projection is plotted and subsequent projections can
     be selected for plotting.
 
-    Putting another argument (any string) after the first one will enable batch saving of
-    plots to png files rather than showing the interactive plotting GUI.
-    
-    Usage:
-        ./readRthRaw.py data/file-0000.projections
-    
-        readRthRaw.main("data/file-0000.projections")
+    Plots in png format and/or coordinates in text format can be output instead using
+    the "-p" and "-c" options.
 
-        ./readRthRaw.py data/file-0000.projections save
-        
+    Usage examples:
+        ./readRthRaw.py data/file-0000.projections
+
+        ./readRthRaw.py data/file-0000.projections -p
+
+        ./readRthRaw.py data/file-0000.projections -c
+
 """
 
 import sys, struct
@@ -25,6 +25,7 @@ import scipy.fftpack
 import pylab
 from matplotlib.widgets import Button
 from optparse import OptionParser
+import os
 
 float_bytes = 8 #These are being written on a 64-bit system
 
@@ -55,7 +56,7 @@ class ProjectionPlot:
         self.stemBase = []
         self.stemLines = []
         
-    def showProj(self,frame, saveToFiles=False):
+    def showProj(self,frame, savePlots=False, saveCoords=False, coordFile=None):
       # fts: all the fourier-transformed projections in one array; x, y, and z each are in their own row
       # frame: which projection to show
       self.index = frame*3
@@ -65,7 +66,8 @@ class ProjectionPlot:
       if len(self.fts) < self.index+3 or self.index < 0:
         print "Frame " + str(frame) + " does not exist"
         return
-      if saveToFiles:
+      coords = []
+      if savePlots:
         pylab.figure(figsize=(13,6))
       for i in range(0,3):
         axes=pylab.subplot('13'+str(1+i))
@@ -87,13 +89,16 @@ class ProjectionPlot:
           self.stemBase.append(stem_base)
           self.stemLines.append(stem_lines)
           xres = self.fov/self.xsize
-          pylab.xlabel(self.axis[i]+':'+'{0:.3}'.format(xres*(peakInd-len(mag)/2))+' mm')
-      if saveToFiles:
+          coords.append(xres*(peakInd-len(mag)/2))
+          pylab.xlabel(self.axis[i]+':'+'{0:.3}'.format(coords[i])+' mm')
+      if savePlots:
         pylab.savefig('proj{0:04d}.png'.format(frame))
         self.clearStems()
         pylab.clf()
         pylab.close()
-      else:
+      if saveCoords and not coordFile is None:
+        coordFile.write("%0.1f %0.1f %0.1f\n" % (coords[0], coords[1], coords[2]))
+      elif not savePlots and not saveCoords:
         pylab.draw()
         
     def makeTicks(self):
@@ -163,7 +168,6 @@ def main():
         sys.exit(0)
     rawFile = args[0]
     fp = open(rawFile,"rb")
-    savePlots = options.saveplots
 
     done = False
     projections = [] # array of tuples, where each tuple is a series of complex floats
@@ -215,9 +219,13 @@ def main():
       plotter = ProjectionPlot(fts,xsize,fieldOfView)
 
     #Save to files:
-    if savePlots and len(fts) > 0:
+    if (options.saveplots or options.savecoords) and len(fts) > 0:
+      coordFile = None
+      if options.savecoords:
+        fbase,fext = os.path.splitext(rawFile)
+        coordFile = open(fbase + '-coords.txt','w')
       for i in range(len(projComplex)):
-        plotter.showProj(i,savePlots)
+        plotter.showProj(i,options.saveplots,options.savecoords,coordFile)
         sys.stdout.write("\rSaved projection %i" % i)
         sys.stdout.flush()
       print "\nDone."
