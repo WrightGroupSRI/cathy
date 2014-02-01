@@ -24,6 +24,7 @@ import scipy
 import scipy.fftpack
 import pylab
 from matplotlib.widgets import Button
+from optparse import OptionParser
 
 float_bytes = 8 #These are being written on a 64-bit system
 
@@ -150,12 +151,19 @@ class ProjectionPlot:
         self.index = self.index % len(self.fts)
         self.redraw()
         
-def main(rawFile=None, saveOpt=""):
-    if rawFile is None:
-        print __doc__
+def main():
+    parser = OptionParser(usage=__doc__)
+    parser.add_option("-p", "--plot-save", action="store_true", dest="saveplots",help="save plots to files, no gui", default=False)
+    parser.add_option("-c", "--coord-save", action="store_true", dest="savecoords",help="save coordinates to files, no gui", default=False)
+
+    (options,args) = parser.parse_args()
+
+    if (len(args) < 1):
+        print parser.print_help()
         sys.exit(0)
+    rawFile = args[0]
     fp = open(rawFile,"rb")
-    saveToFiles = len(saveOpt) != 0
+    savePlots = options.saveplots
 
     done = False
     projections = [] # array of tuples, where each tuple is a series of complex floats
@@ -207,9 +215,9 @@ def main(rawFile=None, saveOpt=""):
       plotter = ProjectionPlot(fts,xsize,fieldOfView)
 
     #Save to files:
-    if saveToFiles and len(fts) > 0:
+    if savePlots and len(fts) > 0:
       for i in range(len(projComplex)):
-        plotter.showProj(i,True)
+        plotter.showProj(i,savePlots)
         sys.stdout.write("\rSaved projection %i" % i)
         sys.stdout.flush()
       print "\nDone."
@@ -227,4 +235,4 @@ def main(rawFile=None, saveOpt=""):
     sys.exit(0)
     
 if __name__ == "__main__":
-    main(*sys.argv[1:])
+    main()
