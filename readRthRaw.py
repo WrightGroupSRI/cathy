@@ -30,19 +30,21 @@ import os
 float_bytes = 8 #These are being written on a 64-bit system
 
 def readHeader(fp):
-  hdr = fp.read(20) # 3 32-bit ints + 1 64-bit float = 20 bytes
+  hdr = fp.read(36) # 3 32-bit ints + 3 64-bit floats = 28 bytes
   if not hdr:
     print "reached EOF"
-    return (0,0,0,0)
+    return (0,0,0,0,0,0)
   else:
     xsize = struct.unpack('>i',hdr[0:4])[0]
     ysize = struct.unpack('>i',hdr[4:8])[0]
     zsize = struct.unpack('>i',hdr[8:12])[0]
     fov = struct.unpack('>d',hdr[12:20])[0]
-    return (xsize,ysize,zsize,fov)
+    trig = struct.unpack('>d',hdr[20:28])[0]
+    resp = struct.unpack('>d',hdr[28:36])[0]
+    return (xsize,ysize,zsize,fov,trig,resp)
 
 class ProjectionPlot:
-    def __init__(self,fts,xsize,fov,mode='magnitude',tickDistance=100):
+    def __init__(self,fts,xsize,fov,mode='magnitude',tickDistance=100,trigTimes=[],respArr=[]):
         self.fts = fts
         self.xsize = xsize
         self.fov = fov
@@ -55,11 +57,20 @@ class ProjectionPlot:
         self.stemMarkers = []
         self.stemBase = []
         self.stemLines = []
+        self.trigTimes = trigTimes
+        self.useTrig = len(trigTimes) > 0
+        self.respArr = respArr
+        self.useResp = len(respArr) > 0
         
     def showProj(self,frame, savePlots=False, saveCoords=False, coordFile=None):
       # fts: all the fourier-transformed projections in one array; x, y, and z each are in their own row
       # frame: which projection to show
       self.index = frame*3
+      useTrig = False
+      if self.useTrig:
+        trig = self.trigTimes[frame]
+      if self.useResp:
+        resp = self.respArr[frame]
       del self.plots[:]
       self.clearStems()
       #print "Index " + str(index)
@@ -97,7 +108,12 @@ class ProjectionPlot:
         pylab.clf()
         pylab.close()
       if saveCoords and not coordFile is None:
-        coordFile.write("%0.1f %0.1f %0.1f\n" % (coords[0], coords[1], coords[2]))
+        coordFile.write("%0.1f %0.1f %0.1f" % (coords[0], coords[1], coords[2]))
+        if self.useTrig:
+          coordFile.write(" %d" % (trig))
+        if self.useResp:
+          coordFile.write(" %d" % (resp))
+        coordFile.write("\n")
       elif not savePlots and not saveCoords:
         pylab.draw()
         
@@ -172,12 +188,16 @@ def main():
     done = False
     projections = [] # array of tuples, where each tuple is a series of complex floats
     projComplex = []
+    triggerTimes = [] #array of trigger times, one triggerTime per each triplet of projections
+    respPhases = []
     projNum = 0
     projSize = 0
     first = True
     xsize = ysize = zsize = fieldOfView = 0;
     while not done:
-      xs,ys,zs,fov=readHeader(fp)
+      xs,ys,zs,fov,trig,resp=readHeader(fp)
+      triggerTimes.append(trig)
+      respPhases.append(resp)
       if (xs == 0 or ys == 0 or zs == 0):
         done = True;
         break
@@ -216,7 +236,7 @@ def main():
 
 
     if len(fts) > 0:
-      plotter = ProjectionPlot(fts,xsize,fieldOfView)
+      plotter = ProjectionPlot(fts,xsize,fieldOfView,trigTimes=triggerTimes,respArr=respPhases)
 
     #Save to files:
     if (options.saveplots or options.savecoords) and len(fts) > 0:
