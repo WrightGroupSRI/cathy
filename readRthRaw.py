@@ -31,7 +31,7 @@ import snrCalc
 float_bytes = 8 #These are being written on a 64-bit system
 
 def readHeader(fp):
-  hdr = fp.read(36) # 3 32-bit ints + 3 64-bit floats = 28 bytes
+  hdr = fp.read(36) # 3 32-bit ints + 3 64-bit floats = 36 bytes
   if not hdr:
     print "reached EOF"
     return (0,0,0,0,0,0)
@@ -43,6 +43,18 @@ def readHeader(fp):
     trig = struct.unpack('>d',hdr[20:28])[0]
     resp = struct.unpack('>d',hdr[28:36])[0]
     return (xsize,ysize,zsize,fov,trig,resp)
+    
+def readLegacyHeader(fp):
+  hdr = fp.read(20) # 3 32-bit ints + 1 64-bit floats = 20 bytes
+  if not hdr:
+    print "reached EOF"
+    return (0,0,0,0)
+  else:
+    xsize = struct.unpack('>i',hdr[0:4])[0]
+    ysize = struct.unpack('>i',hdr[4:8])[0]
+    zsize = struct.unpack('>i',hdr[8:12])[0]
+    fov = struct.unpack('>d',hdr[12:20])[0]
+    return (xsize,ysize,zsize,fov)
 
 class ProjectionPlot:
     def __init__(self,fts,xsize,fov,mode='magnitude',tickDistance=100,trigTimes=[],respArr=[]):
@@ -180,6 +192,7 @@ def main():
     parser = OptionParser(usage=__doc__)
     parser.add_option("-p", "--plot-save", action="store_true", dest="saveplots",help="save plots to files, no gui", default=False)
     parser.add_option("-c", "--coord-save", action="store_true", dest="savecoords",help="save coordinates to files, no gui", default=False)
+    parser.add_option("-l", "--legacy", action="store_true", dest="legacy",help="read legacy files with no trig and resp values", default=False)
 
     (options,args) = parser.parse_args()
 
@@ -199,9 +212,13 @@ def main():
     first = True
     xsize = ysize = zsize = fieldOfView = 0;
     while not done:
-      xs,ys,zs,fov,trig,resp=readHeader(fp)
-      triggerTimes.append(trig)
-      respPhases.append(resp)
+      xs = ys = zs = fov = 0
+      if options.legacy:
+        xs,ys,zs,fov=readLegacyHeader(fp)
+      else:
+        xs,ys,zs,fov,trig,resp=readHeader(fp)
+        triggerTimes.append(trig)
+        respPhases.append(resp)
       if (xs == 0 or ys == 0 or zs == 0):
         done = True;
         break
