@@ -26,6 +26,7 @@ import pylab
 from matplotlib.widgets import Button
 from optparse import OptionParser
 import os
+import snrCalc
 
 float_bytes = 8 #These are being written on a 64-bit system
 
@@ -78,6 +79,7 @@ class ProjectionPlot:
         print "Frame " + str(frame) + " does not exist"
         return
       coords = []
+      snrs = []
       if savePlots:
         pylab.figure(figsize=(13,6))
       for i in range(0,3):
@@ -91,6 +93,8 @@ class ProjectionPlot:
           peak = max(mag)
           peakInd = list(mag).index(peak)
           self.plots.append( pylab.plot(mag) )
+          snr = snrCalc.getSNR(mag,peak)
+          snrs.append(snr) 
           pylab.title(self.axis[i] + ' Magnitude Projection');
           pylab.ylim([0,30]);
           axes.set_autoscaley_on(False);
@@ -108,7 +112,7 @@ class ProjectionPlot:
         pylab.clf()
         pylab.close()
       if saveCoords and not coordFile is None:
-        coordFile.write("%0.1f %0.1f %0.1f" % (coords[0], coords[1], coords[2]))
+        coordFile.write("%0.1f %0.1f %0.1f %d" % (coords[0], coords[1], coords[2], min(snrs)))
         if self.useTrig:
           coordFile.write(" %d" % (trig))
         if self.useResp:
