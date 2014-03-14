@@ -128,7 +128,7 @@ class ProjectionPlot:
         if self.useTrig:
           coordFile.write(" %d" % (trig))
         if self.useResp:
-          coordFile.write(" %d" % (resp))
+          coordFile.write(" %.5f" % (resp))
         coordFile.write("\n")
       elif not savePlots and not saveCoords:
         pylab.draw()
