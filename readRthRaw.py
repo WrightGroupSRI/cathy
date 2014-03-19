@@ -6,8 +6,11 @@
     projection file. The first projection is plotted and subsequent projections can
     be selected for plotting.
 
-    Plots in png format and/or coordinates in text format can be output instead using
+    Plots in png format and/or coordinates & physiology data in text format can be output instead using
     the "-p" and "-c" options.
+
+    Note that respiratory data from RTHawk is scaled by 10^5 to give an integer (the respiratory information
+    from RTHawk is a float between 0 and 1).
 
     Usage examples:
         ./readRthRaw.py data/file-0000.projections
@@ -128,7 +131,7 @@ class ProjectionPlot:
         if self.useTrig:
           coordFile.write(" %d" % (trig))
         if self.useResp:
-          coordFile.write(" %.5f" % (resp))
+          coordFile.write(" %.d" % (resp * (10**5)))
         coordFile.write("\n")
       elif not savePlots and not saveCoords:
         pylab.draw()
