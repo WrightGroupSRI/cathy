@@ -34,6 +34,21 @@ import snrCalc
 float_bytes = 8 #These are being written on a 64-bit system
 
 def readHeader(fp):
+  hdr = fp.read(44) # 3 32-bit ints + 1 64-bit int + 3 64-bit floats = 44 bytes
+  if not hdr:
+    print "reached EOF"
+    return (0,0,0,0,0,0,0)
+  else:
+    xsize = struct.unpack('>i',hdr[0:4])[0]
+    ysize = struct.unpack('>i',hdr[4:8])[0]
+    zsize = struct.unpack('>i',hdr[8:12])[0]
+    fov = struct.unpack('>d',hdr[12:20])[0]
+    timestamp = struct.unpack('>q',hdr[20:28])[0]
+    trig = struct.unpack('>d',hdr[28:36])[0]
+    resp = struct.unpack('>d',hdr[36:44])[0]
+    return (xsize,ysize,zsize,fov,trig,resp,timestamp)
+
+def readLegacy2Header(fp):
   hdr = fp.read(36) # 3 32-bit ints + 3 64-bit floats = 36 bytes
   if not hdr:
     print "reached EOF"
@@ -60,7 +75,7 @@ def readLegacyHeader(fp):
     return (xsize,ysize,zsize,fov)
 
 class ProjectionPlot:
-    def __init__(self,fts,xsize,fov,mode='magnitude',tickDistance=100,trigTimes=[],respArr=[]):
+    def __init__(self,fts,xsize,fov,mode='magnitude',tickDistance=100,trigTimes=[],respArr=[], timestamps=[]):
         self.fts = fts
         self.xsize = xsize
         self.fov = fov
@@ -77,6 +92,8 @@ class ProjectionPlot:
         self.useTrig = len(trigTimes) > 0
         self.respArr = respArr
         self.useResp = len(respArr) > 0
+        self.timeStamps = timestamps
+        self.useTimeStamps = len(timestamps) > 0
         
     def showProj(self,frame, savePlots=False, saveCoords=False, coordFile=None):
       # fts: all the fourier-transformed projections in one array; x, y, and z each are in their own row
@@ -87,6 +104,8 @@ class ProjectionPlot:
         trig = self.trigTimes[frame]
       if self.useResp:
         resp = self.respArr[frame]
+      if self.useTimeStamps:
+        timestamp = self.timeStamps[frame]
       del self.plots[:]
       self.clearStems()
       #print "Index " + str(index)
@@ -128,10 +147,12 @@ class ProjectionPlot:
         pylab.close()
       if saveCoords and not coordFile is None:
         coordFile.write("%0.1f %0.1f %0.1f %d" % (coords[0], coords[1], coords[2], min(snrs)))
+        if self.useTimeStamps:
+          coordFile.write(" %d" % (timestamp))
         if self.useTrig:
           coordFile.write(" %d" % (trig))
         if self.useResp:
-          coordFile.write(" %.d" % (resp * (10**5)))
+          coordFile.write(" %d" % (resp * (10**5)))
         coordFile.write("\n")
       elif not savePlots and not saveCoords:
         pylab.draw()
@@ -195,7 +216,8 @@ def main():
     parser = OptionParser(usage=__doc__)
     parser.add_option("-p", "--plot-save", action="store_true", dest="saveplots",help="save plots to files, no gui", default=False)
     parser.add_option("-c", "--coord-save", action="store_true", dest="savecoords",help="save coordinates to files, no gui", default=False)
-    parser.add_option("-l", "--legacy", action="store_true", dest="legacy",help="read legacy files with no trig and resp values", default=False)
+    parser.add_option("-l", "--legacy", action="store_true", dest="legacy",help="read legacy files with no trig, resp, or timestamp values", default=False)
+    parser.add_option("-m", "--legacy2", action="store_true", dest="legacy2",help="read legacy files with trig and resp but no timestamp values", default=False)
 
     (options,args) = parser.parse_args()
 
@@ -210,6 +232,7 @@ def main():
     projComplex = []
     triggerTimes = [] #array of trigger times, one triggerTime per each triplet of projections
     respPhases = []
+    timestamps = []
     projNum = 0
     projSize = 0
     first = True
@@ -218,10 +241,15 @@ def main():
       xs = ys = zs = fov = 0
       if options.legacy:
         xs,ys,zs,fov=readLegacyHeader(fp)
-      else:
-        xs,ys,zs,fov,trig,resp=readHeader(fp)
+      elif options.legacy2:
+        xs,ys,zs,fov,trig,resp=readLegacy2Header(fp)
         triggerTimes.append(trig)
         respPhases.append(resp)
+      else:
+        xs,ys,zs,fov,trig,resp,timestamp=readHeader(fp)
+        triggerTimes.append(trig)
+        respPhases.append(resp)
+        timestamps.append(timestamp)
       if (xs == 0 or ys == 0 or zs == 0):
         done = True;
         break
@@ -260,7 +288,7 @@ def main():
 
 
     if len(fts) > 0:
-      plotter = ProjectionPlot(fts,xsize,fieldOfView,trigTimes=triggerTimes,respArr=respPhases)
+      plotter = ProjectionPlot(fts,xsize,fieldOfView,trigTimes=triggerTimes,respArr=respPhases,timestamps=timestamps)
 
     #Save to files:
     if (options.saveplots or options.savecoords) and len(fts) > 0:
