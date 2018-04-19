@@ -36,7 +36,7 @@ float_bytes = 8 #These are being written on a 64-bit system
 def readHeader(fp):
   hdr = fp.read(44) # 3 32-bit ints + 1 64-bit int + 3 64-bit floats = 44 bytes
   if not hdr:
-    print "reached EOF"
+    print("reached EOF")
     return (0,0,0,0,0,0,0)
   else:
     xsize = struct.unpack('>i',hdr[0:4])[0]
@@ -51,7 +51,7 @@ def readHeader(fp):
 def readLegacy2Header(fp):
   hdr = fp.read(36) # 3 32-bit ints + 3 64-bit floats = 36 bytes
   if not hdr:
-    print "reached EOF"
+    print("reached EOF")
     return (0,0,0,0,0,0)
   else:
     xsize = struct.unpack('>i',hdr[0:4])[0]
@@ -61,11 +61,11 @@ def readLegacy2Header(fp):
     trig = struct.unpack('>d',hdr[20:28])[0]
     resp = struct.unpack('>d',hdr[28:36])[0]
     return (xsize,ysize,zsize,fov,trig,resp)
-    
+
 def readLegacyHeader(fp):
   hdr = fp.read(20) # 3 32-bit ints + 1 64-bit floats = 20 bytes
   if not hdr:
-    print "reached EOF"
+    print("reached EOF")
     return (0,0,0,0)
   else:
     xsize = struct.unpack('>i',hdr[0:4])[0]
@@ -94,7 +94,7 @@ class ProjectionPlot:
         self.useResp = len(respArr) > 0
         self.timeStamps = timestamps
         self.useTimeStamps = len(timestamps) > 0
-        
+
     def showProj(self,frame, savePlots=False, saveCoords=False, coordFile=None):
       # fts: all the fourier-transformed projections in one array; x, y, and z each are in their own row
       # frame: which projection to show
@@ -110,7 +110,7 @@ class ProjectionPlot:
       self.clearStems()
       #print "Index " + str(index)
       if len(self.fts) < self.index+3 or self.index < 0:
-        print "Frame " + str(frame) + " does not exist"
+        print("Frame " + str(frame) + " does not exist")
         return
       coords = []
       snrs = []
@@ -128,11 +128,11 @@ class ProjectionPlot:
           peakInd = list(mag).index(peak)
           self.plots.append( pylab.plot(mag) )
           snr = snrCalc.getSNR(mag,peak)
-          snrs.append(snr) 
+          snrs.append(snr)
           pylab.title(self.axis[i] + ' Magnitude Projection');
           pylab.ylim([0,30]);
           axes.set_autoscaley_on(False);
-          pylab.xticks(self.tick_locs,self.tick_labels); 
+          pylab.xticks(self.tick_locs,self.tick_labels);
           stem_marker, stem_lines, stem_base = pylab.stem([peakInd],[peak],'r-','ro');
           self.stemMarkers.append(stem_marker)
           self.stemBase.append(stem_base)
@@ -156,7 +156,7 @@ class ProjectionPlot:
         coordFile.write("\n")
       elif not savePlots and not saveCoords:
         pylab.draw()
-        
+
     def makeTicks(self):
         zeroPixel = (self.xsize+1)/2.0
         tickIncr = self.tickDistance/(self.fov/self.xsize)
@@ -211,7 +211,7 @@ class ProjectionPlot:
         self.index -= 3
         self.index = self.index % len(self.fts)
         self.redraw()
-        
+
 def main():
     parser = OptionParser(usage=__doc__)
     parser.add_option("-p", "--plot-save", action="store_true", dest="saveplots",help="save plots to files, no gui", default=False)
@@ -222,7 +222,7 @@ def main():
     (options,args) = parser.parse_args()
 
     if (len(args) < 1):
-        print parser.print_help()
+        print(parser.print_help())
         sys.exit(0)
     rawFile = args[0]
     fp = open(rawFile,"rb")
@@ -262,21 +262,21 @@ def main():
       projByteSize = projSize*float_bytes
       proj = fp.read(projByteSize)
       if proj is None or len(proj) < projByteSize:
-        print "Could not read projection " + str(projNum) + " stopping here."
+        print("Could not read projection " + str(projNum) + " stopping here.")
         break
       projections.append( struct.unpack('>'+str(projSize)+'d',proj[0:projByteSize]) )
       projNum+=1
-    print "Read " + str(projNum) + " projections...",
-    print "x size = " + str(xsize) + ", ysize = " + str(ysize) + " zsize = " + str(zsize) + " fov = " + str(fieldOfView)
+    print("Read " + str(projNum) + " projections...",end='')
+    print("x size = " + str(xsize) + ", ysize = " + str(ysize) + " zsize = " + str(zsize) + " fov = " + str(fieldOfView))
     # NOTE: each projection in projComplex and projections contains the x, y and z projections
-    for proj in xrange(0,projNum):
+    for proj in range(0,projNum):
       projComplex.append([])
-      for i in xrange(0,projSize,2):
+      for i in range(0,projSize,2):
         projComplex[proj].append( complex(projections[proj][i],projections[proj][i+1]) )
 
     fts = []
     projRaw = []                # This will be the same as projComplex but with the x, y and z projections each in their own row
-    print "Num projections " + str(len(projComplex))
+    print("Num projections " + str(len(projComplex)))
     for projection in projComplex:
       # split into 'ysize' (3) projections
       for y in range(1,ysize+1):
@@ -284,7 +284,7 @@ def main():
         inverseft = scipy.fftpack.ifft(axis) #,npts)
         fts.append( scipy.fftpack.fftshift(inverseft) )
         projRaw.append(axis)
-    print "Num ffts " + str(len(fts))
+    print("Num ffts " + str(len(fts)))
 
 
     if len(fts) > 0:
@@ -300,7 +300,7 @@ def main():
         plotter.showProj(i,options.saveplots,options.savecoords,coordFile)
         sys.stdout.write("\rSaved projection %i" % i)
         sys.stdout.flush()
-      print "\nDone."
+      print("\nDone.")
     elif len(fts) > 0:
       plotter.showProj(0)
       axprev = pylab.axes([0.7, 0.02, 0.1, 0.075])
@@ -311,8 +311,8 @@ def main():
       bprev.on_clicked(plotter.prev)
 
       pylab.show()
-    
+
     sys.exit(0)
-    
+
 if __name__ == "__main__":
     main()
