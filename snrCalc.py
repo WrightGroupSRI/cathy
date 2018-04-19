@@ -16,4 +16,6 @@ def getSNR(projection, peak, window_size=40):
     stdev = scipy.std(projection[len(projection)-window_size:])
   else:
     stdev = scipy.std(projection[:window_size])
+  if stdev == 0:
+      return 0
   return (peak * 1.0) / stdev
