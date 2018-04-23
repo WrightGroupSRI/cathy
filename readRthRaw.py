@@ -75,7 +75,7 @@ def readLegacyHeader(fp):
     return (xsize,ysize,zsize,fov)
 
 class ProjectionPlot:
-    def __init__(self,fts,xsize,fov,mode='magnitude',tickDistance=100,trigTimes=[],respArr=[], timestamps=[]):
+    def __init__(self,fts,xsize,fov,mode='magnitude',tickDistance=100,trigTimes=[],respArr=[], timestamps=[], ysize=3):
         self.fts = fts
         self.xsize = xsize
         self.fov = fov
@@ -94,11 +94,12 @@ class ProjectionPlot:
         self.useResp = len(respArr) > 0
         self.timeStamps = timestamps
         self.useTimeStamps = len(timestamps) > 0
+        self.ysize = ysize
 
     def showProj(self,frame, savePlots=False, saveCoords=False, coordFile=None):
       # fts: all the fourier-transformed projections in one array; x, y, and z each are in their own row
       # frame: which projection to show
-      self.index = frame*3
+      self.index = frame*self.ysize
       useTrig = False
       if self.useTrig:
         trig = self.trigTimes[frame]
@@ -109,15 +110,15 @@ class ProjectionPlot:
       del self.plots[:]
       self.clearStems()
       #print "Index " + str(index)
-      if len(self.fts) < self.index+3 or self.index < 0:
+      if len(self.fts) < self.index+self.ysize or self.index < 0:
         print("Frame " + str(frame) + " does not exist")
         return
       coords = []
       snrs = []
       if savePlots:
         pylab.figure(figsize=(13,6))
-      for i in range(0,3):
-        axes=pylab.subplot('13'+str(1+i))
+      for i in range(0,self.ysize):
+        axes=pylab.subplot('1'+str(self.ysize)+str(1+i))
         pylab.subplots_adjust(bottom=0.2)
         if (self.mode == "phase"):
           self.plots[i].append( pylab.plot(scipy.angle(self.fts[self.index+i])) )
@@ -130,7 +131,7 @@ class ProjectionPlot:
           snr = snrCalc.getSNR(mag,peak)
           snrs.append(snr)
           pylab.title(self.axis[i] + ' Magnitude Projection');
-          pylab.ylim([0,30]);
+          pylab.ylim([0,100]);
           axes.set_autoscaley_on(False);
           pylab.xticks(self.tick_locs,self.tick_labels);
           stem_marker, stem_lines, stem_base = pylab.stem([peakInd],[peak],'r-','ro');
@@ -185,8 +186,8 @@ class ProjectionPlot:
 
     def redraw(self):
         self.clearStems()
-        for i in range(0,3):
-            axes = pylab.subplot('13'+str(1+i))
+        for i in range(0,self.ysize):
+            axes = pylab.subplot('1'+str(self.ysize)+str(1+i))
             if (self.mode == "phase"):
                 self.plots[i][0].set_ydata(scipy.angle(self.fts[self.index+i]))
             else:
@@ -288,7 +289,7 @@ def main():
 
 
     if len(fts) > 0:
-      plotter = ProjectionPlot(fts,xsize,fieldOfView,trigTimes=triggerTimes,respArr=respPhases,timestamps=timestamps)
+      plotter = ProjectionPlot(fts,xsize,fieldOfView,trigTimes=triggerTimes,respArr=respPhases,timestamps=timestamps,ysize=ysize)
 
     #Save to files:
     if (options.saveplots or options.savecoords) and len(fts) > 0:
