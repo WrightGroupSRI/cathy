@@ -77,7 +77,7 @@ def readLegacyHeader(fp):
     return (xsize,ysize,zsize,fov)
 
 class ProjectionPlot:
-    def __init__(self,fts,xsize,fov,mode='magnitude',tickDistance=100,trigTimes=[],respArr=[], timestamps=[], ysize=3):
+    def __init__(self,fts,xsize,fov,mode='magnitude',tickDistance=100,trigTimes=[],respArr=[], timestamps=[], ysize=3, drawStems=True):
         self.fts = fts
         self.xsize = xsize
         self.fov = fov
@@ -97,6 +97,7 @@ class ProjectionPlot:
         self.timeStamps = timestamps
         self.useTimeStamps = len(timestamps) > 0
         self.ysize = ysize
+        self.drawStems = drawStems
 
     def showProj(self,frame, savePlots=False, saveCoords=False, coordFile=None):
       # fts: all the fourier-transformed projections in one array; x, y, and z each are in their own row
@@ -136,10 +137,11 @@ class ProjectionPlot:
           pylab.ylim([0,100]);
           axes.set_autoscaley_on(False);
           pylab.xticks(self.tick_locs,self.tick_labels);
-          stem_marker, stem_lines, stem_base = pylab.stem([peakInd],[peak],'r-','ro');
-          self.stemMarkers.append(stem_marker)
-          self.stemBase.append(stem_base)
-          self.stemLines.append(stem_lines)
+          if self.drawStems:
+           stem_marker, stem_lines, stem_base = pylab.stem([peakInd],[peak],'r-','ro');
+           self.stemMarkers.append(stem_marker)
+           self.stemBase.append(stem_base)
+           self.stemLines.append(stem_lines)
           xres = self.fov/self.xsize
           coords.append(xres*(peakInd-len(mag)/2))
           pylab.xlabel(self.axis[i]+':'+'{0:.3}'.format(coords[i])+' mm')
@@ -197,10 +199,11 @@ class ProjectionPlot:
                 self.plots[i][0].set_ydata(mag)
                 peak = max(mag)
                 peakInd = list(mag).index(peak)
-                stem_marker, stem_lines, stem_base = pylab.stem([peakInd],[peak],'r-','ro');
-                self.stemMarkers.append(stem_marker)
-                self.stemBase.append(stem_base)
-                self.stemLines.append(stem_lines)
+                if self.drawStems:
+                  stem_marker, stem_lines, stem_base = pylab.stem([peakInd],[peak],'r-','ro');
+                  self.stemMarkers.append(stem_marker)
+                  self.stemBase.append(stem_base)
+                  self.stemLines.append(stem_lines)
                 xres = self.fov/self.xsize
                 pylab.xlabel(self.axis[i]+':'+'{0:.3}'.format(xres*(peakInd-len(mag)/2))+' mm')
             pylab.draw()
@@ -221,6 +224,7 @@ def main():
     parser.add_option("-c", "--coord-save", action="store_true", dest="savecoords",help="save coordinates to files, no gui", default=False)
     parser.add_option("-l", "--legacy", action="store_true", dest="legacy",help="read legacy files with no trig, resp, or timestamp values", default=False)
     parser.add_option("-m", "--legacy2", action="store_true", dest="legacy2",help="read legacy files with trig and resp but no timestamp values", default=False)
+    parser.add_option("-s", "--stemless", action="store_true", dest="stemless", help="stemless - do not display vertical red lines for peak values", default=False)
 
     (options,args) = parser.parse_args()
 
@@ -291,7 +295,7 @@ def main():
 
 
     if len(fts) > 0:
-      plotter = ProjectionPlot(fts,xsize,fieldOfView,trigTimes=triggerTimes,respArr=respPhases,timestamps=timestamps,ysize=ysize)
+      plotter = ProjectionPlot(fts,xsize,fieldOfView,trigTimes=triggerTimes,respArr=respPhases,timestamps=timestamps,ysize=ysize,drawStems=(not options.stemless))
 
     #Save to files:
     if (options.saveplots or options.savecoords) and len(fts) > 0:
