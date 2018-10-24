@@ -20,7 +20,7 @@
         ./readRthRaw.py data/file-0000.projections -c
 
 """
-
+from __future__ import print_function
 import sys, struct
 import math
 import scipy
@@ -30,6 +30,8 @@ from matplotlib.widgets import Button
 from optparse import OptionParser
 import os
 import snrCalc
+if sys.version_info[0] < 3 and sys.version_info[1] < 6:
+  raise("Python 2.6+ required...")
 
 float_bytes = 8 #These are being written on a 64-bit system
 
