@@ -77,7 +77,7 @@ def readLegacyHeader(fp):
     return (xsize,ysize,zsize,fov)
 
 class ProjectionPlot:
-    def __init__(self,fts,xsize,fov,mode='magnitude',tickDistance=100,trigTimes=[],respArr=[], timestamps=[], ysize=3, drawStems=True):
+    def __init__(self,fts,xsize,fov,mode='magnitude',tickDistance=100,trigTimes=[],respArr=[], timestamps=[], ysize=3, drawStems=True, ylim=100):
         self.fts = fts
         self.xsize = xsize
         self.fov = fov
@@ -98,6 +98,7 @@ class ProjectionPlot:
         self.useTimeStamps = len(timestamps) > 0
         self.ysize = ysize
         self.drawStems = drawStems
+        self.ylim = ylim
 
     def showProj(self,frame, savePlots=False, saveCoords=False, coordFile=None):
       # fts: all the fourier-transformed projections in one array; x, y, and z each are in their own row
@@ -134,7 +135,7 @@ class ProjectionPlot:
           snr = snrCalc.getSNR(mag,peak)
           snrs.append(snr)
           pylab.title(self.axis[i] + ' Magnitude Projection');
-          pylab.ylim([0,100]);
+          pylab.ylim([0,self.ylim]);
           axes.set_autoscaley_on(False);
           pylab.xticks(self.tick_locs,self.tick_labels);
           if self.drawStems:
@@ -225,7 +226,7 @@ def main():
     parser.add_option("-l", "--legacy", action="store_true", dest="legacy",help="read legacy files with no trig, resp, or timestamp values", default=False)
     parser.add_option("-m", "--legacy2", action="store_true", dest="legacy2",help="read legacy files with trig and resp but no timestamp values", default=False)
     parser.add_option("-s", "--stemless", action="store_true", dest="stemless", help="stemless - do not display vertical red lines for peak values", default=False)
-
+    parser.add_option("-y", "--ylim", dest="ylim",help="y-axis limit", metavar="YLIM", type="int", default=100)
     (options,args) = parser.parse_args()
 
     if (len(args) < 1):
@@ -295,7 +296,9 @@ def main():
 
 
     if len(fts) > 0:
-      plotter = ProjectionPlot(fts,xsize,fieldOfView,trigTimes=triggerTimes,respArr=respPhases,timestamps=timestamps,ysize=ysize,drawStems=(not options.stemless))
+      plotter = ProjectionPlot(fts,xsize,fieldOfView,trigTimes=triggerTimes,
+        respArr=respPhases,timestamps=timestamps,ysize=ysize,
+        drawStems=(not options.stemless),ylim=options.ylim)
 
     #Save to files:
     if (options.saveplots or options.savecoords) and len(fts) > 0:
