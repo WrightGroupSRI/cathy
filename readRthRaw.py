@@ -184,6 +184,7 @@ def main():
     parser.add_option("-s", "--stemless", action="store_true", dest="stemless", help="stemless - do not display vertical red lines for peak values", default=False)
     parser.add_option("-y", "--ylim", dest="ylim",help="y-axis limit", metavar="YLIM", type="int", default=100)
     parser.add_option("-f", "--statsfile", action="store_true", dest="statsfile",help="save stats to files, no gui", default=False)
+    parser.add_option("-x", "--statsprefix",dest="statsPrefix",metavar="PREFIX", help="Prefix for stats file", default="")
     (options,args) = parser.parse_args()
 
     if (len(args) < 1):
@@ -222,7 +223,12 @@ def main():
       print( snrStats )      
       if options.statsfile:
           fbase,fext = os.path.splitext(rawFile)
-          statFile = open(fbase + '-stats.txt','w')
+          if options.statsPrefix:
+              fprefix = options.statsPrefix 
+          else:              
+              fprefix = os.path.basename(fbase)
+          dirname = os.path.dirname(os.path.abspath(rawFile))
+          statFile = open(dirname + "/" + fprefix + '-stats.txt','w')
           statFile.write(coordStats + '\n')
           statFile.write(snrStats)
       print("Done.")
