@@ -32,7 +32,7 @@ def makeMovie(dirname,movie_name):
     print(callString)
     os.system(callString)
 
-def recon(fname,dirname,ylim,savePlots=True,saveStats=True):
+def recon(fname,dirname,ylim,savePlots=True,saveStats=True,statsPrefix=""):
     startDir = os.getcwd()
     os.chdir(dirname)
     # Run the recon script
@@ -41,6 +41,8 @@ def recon(fname,dirname,ylim,savePlots=True,saveStats=True):
         optStr += "-p "
     if saveStats:
         optStr += "-f "
+    if statsPrefix:
+        optStr += "-x " + statsPrefix + " "
     callString = "python " + READRTHRAW_PATH + " " + fname + optStr + "-y " + str(ylim)
     print(callString)
     os.system(callString)
@@ -66,10 +68,12 @@ def descend(basedir,filepatt,ylim,movie_prefix,savePlots=True,saveMovies=True,sa
                 else:
                     print("Warning: will overwrite files in " + pngDir)
                 absFname = os.path.abspath(fname)
-                recon(absFname,pngDir,ylim,savePlots=savePlots,saveStats=saveStats)
                 subdBase = os.path.basename(subd)
+                namePrefix = movie_prefix+ "-" + subdBase + "-" + fileBase
+                recon(absFname,pngDir,ylim,savePlots=savePlots,saveStats=saveStats,
+                    statsPrefix=namePrefix)
                 if saveMovies:
-                    makeMovie(pngDir,movie_prefix+ "-" + subdBase + "-" + fileBase)
+                    makeMovie(pngDir,namePrefix)
 
 def main():
     parser = argparse.ArgumentParser(description="Reconstruct tracking projections")
