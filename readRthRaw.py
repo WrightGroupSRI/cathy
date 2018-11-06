@@ -156,18 +156,15 @@ class RawReader:
         print("Num ffts " + str(len(self.fts)))
 
 
-
-"""
-Return stats of given list of sublists, for each index in the sublists
- - Sublists must be of the same length
- - valueNames must be of the same length as sublists
-Example:
-valueList: [ [100,40,20], [110,42,18] ] # [[snr_x, snr_y, snr_z], [snr_x, snr_y, snr_z]]
-valueNames: ["snr_x", "snr_y", "snr_y"]
-"""
 def getStats(valueList,valueNames):
-    #zipVals = zip(*valueList)
-    #for idx,arr in enumerate(zipVals):
+    """Return stats of given list of sublists, for each index in the sublists
+
+     - Sublists must be of the same length
+     - valueNames must be of the same length as sublists
+    Example:
+    valueList: [ [100,40,20], [110,42,18] ] # [[snr_x, snr_y, snr_z], [snr_x, snr_y, snr_z]]
+    valueNames: ["snr_x", "snr_y", "snr_y"]
+    """
     means = np.mean(valueList,0)
     mins = np.amin(valueList,0)
     maxs = np.amax(valueList,0)
