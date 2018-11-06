@@ -25,12 +25,12 @@ import sys, struct
 import math
 import scipy
 import scipy.fftpack
-import pylab
-from matplotlib.widgets import Button
 from optparse import OptionParser
 import os
 import snrCalc
 import numpy as np
+from projPlot import *
+
 if sys.version_info[0] < 3 and sys.version_info[1] < 6:
   raise("Python 2.6+ required...")
 
@@ -77,151 +77,7 @@ def readLegacyHeader(fp):
     fov = struct.unpack('>d',hdr[12:20])[0]
     return (xsize,ysize,zsize,fov)
 
-class ProjectionPlot:
-    def __init__(self,fts,xsize,fov,mode='magnitude',tickDistance=100,trigTimes=[],respArr=[], timestamps=[], ysize=3, drawStems=True, ylim=100):
-        self.fts = fts
-        self.xsize = xsize
-        self.fov = fov
-        self.mode = mode
-        self.tickDistance = tickDistance
-        self.makeTicks()
-        self.index = 0
-        self.plots = []
-        self.axis = {0:'X',1:'Y',2:'Z'}
-        self.stemMarkers = []
-        self.stemBase = []
-        self.stemLines = []
-        self.trigTimes = trigTimes
-        self.useTrig = len(trigTimes) > 0
-        self.respArr = respArr
-        self.useResp = len(respArr) > 0
-        self.timeStamps = timestamps
-        self.useTimeStamps = len(timestamps) > 0
-        self.ysize = ysize
-        self.drawStems = drawStems
-        self.ylim = ylim
 
-    def showProj(self,frame, savePlots=False, saveCoords=False, coordFile=None):
-      # fts: all the fourier-transformed projections in one array; x, y, and z each are in their own row
-      # frame: which projection to show
-      self.index = frame*self.ysize
-      useTrig = False
-      if self.useTrig:
-        trig = self.trigTimes[frame]
-      if self.useResp:
-        resp = self.respArr[frame]
-      if self.useTimeStamps:
-        timestamp = self.timeStamps[frame]
-      del self.plots[:]
-      self.clearStems()
-      #print "Index " + str(index)
-      if len(self.fts) < self.index+self.ysize or self.index < 0:
-        print("Frame " + str(frame) + " does not exist")
-        return
-      coords = []
-      snrs = []
-      if savePlots:
-        pylab.figure(figsize=(13,6))
-      for i in range(0,self.ysize):
-        axes=pylab.subplot('1'+str(self.ysize)+str(1+i))
-        pylab.subplots_adjust(bottom=0.2)
-        if (self.mode == "phase"):
-          self.plots[i].append( pylab.plot(scipy.angle(self.fts[self.index+i])) )
-          pylab.title(self.axis[i] + ' Phase Projection');pylab.xticks(self.tick_locs,self.tick_labels)
-        else:
-          mag = abs(self.fts[self.index+i])
-          peak = max(mag)
-          peakInd = list(mag).index(peak)
-          self.plots.append( pylab.plot(mag) )
-          snr = snrCalc.getSNR(mag,peak)
-          snrs.append(snr)
-          pylab.title(self.axis[i] + ' Magnitude Projection');
-          pylab.ylim([0,self.ylim]);
-          axes.set_autoscaley_on(False);
-          pylab.xticks(self.tick_locs,self.tick_labels);
-          if self.drawStems:
-           stem_marker, stem_lines, stem_base = pylab.stem([peakInd],[peak],'r-','ro');
-           self.stemMarkers.append(stem_marker)
-           self.stemBase.append(stem_base)
-           self.stemLines.append(stem_lines)
-          xres = self.fov/self.xsize
-          coords.append(xres*(peakInd-len(mag)/2))
-          pylab.xlabel(self.axis[i]+': {0:.2f} mm, SNR: {1}'.format(coords[i],int(round(snr))))
-      if savePlots:
-        pylab.savefig('proj{0:04d}.png'.format(frame))
-        self.clearStems()
-        pylab.clf()
-        pylab.close()
-      if saveCoords and not coordFile is None:
-        coordFile.write("%0.1f %0.1f %0.1f %d" % (coords[0], coords[1], coords[2], min(snrs)))
-        if self.useTimeStamps:
-          coordFile.write(" %d" % (timestamp))
-        if self.useTrig:
-          coordFile.write(" %d" % (trig))
-        if self.useResp:
-          coordFile.write(" %d" % (resp * (10**5)))
-        coordFile.write("\n")
-      elif not savePlots and not saveCoords:
-        pylab.draw()
-      return(coords,snrs)
-
-    def makeTicks(self):
-        zeroPixel = (self.xsize+1)/2.0
-        tickIncr = self.tickDistance/(self.fov/self.xsize)
-        numTicks = int(math.floor(self.xsize / tickIncr))
-        self.tick_locs = []
-        self.tick_labels = []
-        currLabel = -1*self.fov/2.0
-        currLoc = 0
-        for i in range(0,numTicks):
-            self.tick_labels.append(str(currLabel))
-            currLabel += self.tickDistance
-            self.tick_locs.append(currLoc)
-            currLoc += tickIncr
-
-    def clearStems(self):
-        for marker in self.stemMarkers:
-            marker.remove()
-        for base in self.stemBase:
-            base.remove()
-        for line in self.stemLines:
-            line[0].remove()
-
-        del self.stemMarkers[:]
-        del self.stemBase[:]
-        del self.stemLines[:]
-
-    def redraw(self):
-        self.clearStems()
-        for i in range(0,self.ysize):
-            axes = pylab.subplot('1'+str(self.ysize)+str(1+i))
-            if (self.mode == "phase"):
-                self.plots[i][0].set_ydata(scipy.angle(self.fts[self.index+i]))
-            else:
-                mag = abs(self.fts[self.index+i])
-                self.plots[i][0].set_ydata(mag)
-                peak = max(mag)
-                peakInd = list(mag).index(peak)
-                snr = snrCalc.getSNR(mag,peak)
-                if self.drawStems:
-                  stem_marker, stem_lines, stem_base = pylab.stem([peakInd],[peak],'r-','ro');
-                  self.stemMarkers.append(stem_marker)
-                  self.stemBase.append(stem_base)
-                  self.stemLines.append(stem_lines)
-                xres = self.fov/self.xsize
-                pylab.xlabel(self.axis[i]+': {0:.2f} mm, SNR: {1}'.format(
-                    xres*(peakInd-len(mag)/2),int(round(snr)) ))
-            pylab.draw()
-
-    def next(self,event):
-        self.index += 3
-        self.index = self.index % len(self.fts)
-        self.redraw()
-
-    def prev(self,event):
-        self.index -= 3
-        self.index = self.index % len(self.fts)
-        self.redraw()
 """
 Return stats of given list of sublists, for each index in the sublists
  - Sublists must be of the same length
