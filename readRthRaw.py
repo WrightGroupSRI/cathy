@@ -186,6 +186,7 @@ def main():
     parser.add_option("-m", "--legacy2", action="store_true", dest="legacy2",help="read legacy files with trig and resp but no timestamp values", default=False)
     parser.add_option("-s", "--stemless", action="store_true", dest="stemless", help="stemless - do not display vertical red lines for peak values", default=False)
     parser.add_option("-y", "--ylim", dest="ylim",help="y-axis limit", metavar="YLIM", type="int", default=100)
+    parser.add_option("-f", "--statsfile", action="store_true", dest="statsfile",help="save stats to files, no gui", default=False)
     (options,args) = parser.parse_args()
 
     if (len(args) < 1):
@@ -202,7 +203,7 @@ def main():
         drawStems=(not options.stemless),ylim=options.ylim)
 
     #Save to files:
-    if (options.saveplots or options.savecoords) and len(rdr.fts) > 0:
+    if (options.saveplots or options.savecoords or options.statsfile) and len(rdr.fts) > 0:
       coordFile = None
       allCoords = []
       allSnrs = []
@@ -218,8 +219,15 @@ def main():
       if coordFile:
         coordFile.close()
       print('\n')
-      print( getStats(allCoords,["X_coord", "Y_coord", "Z_coord"]) )
-      print( getStats(allSnrs,["SNR_X", "SNR_Y", "SNR_Z"]) )
+      coordStats = getStats(allCoords,["X_coord", "Y_coord", "Z_coord"])
+      snrStats = getStats(allSnrs,["SNR_X", "SNR_Y", "SNR_Z"])
+      print( coordStats )
+      print( snrStats )      
+      if options.statsfile:
+          fbase,fext = os.path.splitext(rawFile)
+          statFile = open(fbase + '-stats.txt','w')
+          statFile.write(coordStats + '\n')
+          statFile.write(snrStats)
       print("Done.")
     elif len(rdr.fts) > 0:
       plotter.showProj(0)
