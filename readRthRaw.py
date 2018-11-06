@@ -36,46 +36,125 @@ if sys.version_info[0] < 3 and sys.version_info[1] < 6:
 
 float_bytes = 8 #These are being written on a 64-bit system
 
-def readHeader(fp):
-  hdr = fp.read(44) # 3 32-bit ints + 1 64-bit int + 3 64-bit floats = 44 bytes
-  if not hdr:
-    print("reached EOF")
-    return (0,0,0,0,0,0,0)
-  else:
-    xsize = struct.unpack('>i',hdr[0:4])[0]
-    ysize = struct.unpack('>i',hdr[4:8])[0]
-    zsize = struct.unpack('>i',hdr[8:12])[0]
-    fov = struct.unpack('>d',hdr[12:20])[0]
-    timestamp = struct.unpack('>q',hdr[20:28])[0]
-    trig = struct.unpack('>d',hdr[28:36])[0]
-    resp = struct.unpack('>d',hdr[36:44])[0]
-    return (xsize,ysize,zsize,fov,trig,resp,timestamp)
+class RawReader:
+    def __init__(self,fname="",float_bytes=8,legacy=False,legacy2=False):
+        self.rawFile = fname
+        self.legacy = legacy
+        self.legacy2 = legacy2
+        self.float_bytes = float_bytes
+        self.setup()
 
-def readLegacy2Header(fp):
-  hdr = fp.read(36) # 3 32-bit ints + 3 64-bit floats = 36 bytes
-  if not hdr:
-    print("reached EOF")
-    return (0,0,0,0,0,0)
-  else:
-    xsize = struct.unpack('>i',hdr[0:4])[0]
-    ysize = struct.unpack('>i',hdr[4:8])[0]
-    zsize = struct.unpack('>i',hdr[8:12])[0]
-    fov = struct.unpack('>d',hdr[12:20])[0]
-    trig = struct.unpack('>d',hdr[20:28])[0]
-    resp = struct.unpack('>d',hdr[28:36])[0]
-    return (xsize,ysize,zsize,fov,trig,resp)
+    def setup(self):
+        self.projections = [] # array of tuples, where each tuple is a series of complex floats
+        self.projComplex = []
+        self.triggerTimes = [] #array of trigger times, one triggerTime per each triplet of projections
+        self.respPhases = []
+        self.timestamps = []
+        self.projNum = 0
+        self.projSize = 0
+        self.fts = []
+        self.projRaw = []     # This will be the same as projComplex but with the x, y and z projections each in their own row
+        self.xsize = 0
+        self.ysize = 0
+        self.zsize = 0
+        self.fieldOfView = 0       
+ 
+    def readHeader(self,fp):
+      hdr = fp.read(44) # 3 32-bit ints + 1 64-bit int + 3 64-bit floats = 44 bytes
+      if not hdr:
+        print("reached EOF")
+        return (0,0,0,0,0,0,0)
+      else:
+        xsize = struct.unpack('>i',hdr[0:4])[0]
+        ysize = struct.unpack('>i',hdr[4:8])[0]
+        zsize = struct.unpack('>i',hdr[8:12])[0]
+        fov = struct.unpack('>d',hdr[12:20])[0]
+        timestamp = struct.unpack('>q',hdr[20:28])[0]
+        trig = struct.unpack('>d',hdr[28:36])[0]
+        resp = struct.unpack('>d',hdr[36:44])[0]
+        return (xsize,ysize,zsize,fov,trig,resp,timestamp)
 
-def readLegacyHeader(fp):
-  hdr = fp.read(20) # 3 32-bit ints + 1 64-bit floats = 20 bytes
-  if not hdr:
-    print("reached EOF")
-    return (0,0,0,0)
-  else:
-    xsize = struct.unpack('>i',hdr[0:4])[0]
-    ysize = struct.unpack('>i',hdr[4:8])[0]
-    zsize = struct.unpack('>i',hdr[8:12])[0]
-    fov = struct.unpack('>d',hdr[12:20])[0]
-    return (xsize,ysize,zsize,fov)
+    def readLegacy2Header(self,fp):
+      hdr = fp.read(36) # 3 32-bit ints + 3 64-bit floats = 36 bytes
+      if not hdr:
+        print("reached EOF")
+        return (0,0,0,0,0,0)
+      else:
+        xsize = struct.unpack('>i',hdr[0:4])[0]
+        ysize = struct.unpack('>i',hdr[4:8])[0]
+        zsize = struct.unpack('>i',hdr[8:12])[0]
+        fov = struct.unpack('>d',hdr[12:20])[0]
+        trig = struct.unpack('>d',hdr[20:28])[0]
+        resp = struct.unpack('>d',hdr[28:36])[0]
+        return (xsize,ysize,zsize,fov,trig,resp)
+
+    def readLegacyHeader(self,fp):
+      hdr = fp.read(20) # 3 32-bit ints + 1 64-bit floats = 20 bytes
+      if not hdr:
+        print("reached EOF")
+        return (0,0,0,0)
+      else:
+        xsize = struct.unpack('>i',hdr[0:4])[0]
+        ysize = struct.unpack('>i',hdr[4:8])[0]
+        zsize = struct.unpack('>i',hdr[8:12])[0]
+        fov = struct.unpack('>d',hdr[12:20])[0]
+        return (xsize,ysize,zsize,fov)
+    
+    def readFile(self,rawFile = ""):
+        if not rawFile:
+            rawFile = self.rawFile
+        fp = open(rawFile,"rb")
+        done = False
+        first = True
+        self.setup()
+        while not done:
+          xs = ys = zs = fov = 0
+          if self.legacy:
+            xs,ys,zs,fov=self.readLegacyHeader(fp)
+          elif self.legacy2:
+            xs,ys,zs,fov,trig,resp=self.readLegacy2Header(fp)
+            self.triggerTimes.append(trig)
+            self.respPhases.append(resp)
+          else:
+            xs,ys,zs,fov,trig,resp,timestamp=self.readHeader(fp)
+            self.triggerTimes.append(trig)
+            self.respPhases.append(resp)
+            self.timestamps.append(timestamp)
+          if (xs == 0 or ys == 0 or zs == 0):
+            done = True;
+            break
+          if first:
+            self.xsize = xs
+            self.ysize = ys
+            self.zsize = zs
+            self.fieldOfView = fov
+          projSize = xs*ys*zs*2
+          projByteSize = projSize*float_bytes
+          proj = fp.read(projByteSize)
+          if proj is None or len(proj) < projByteSize:
+            print("Could not read projection " + str(self.projNum) + " stopping here.")
+            break
+          self.projections.append( struct.unpack('>'+str(projSize)+'d',proj[0:projByteSize]) )
+          self.projNum+=1
+        print("Read " + str(self.projNum) + " projections...",end='')
+        print("x size = " + str(self.xsize) + ", ysize = " + str(self.ysize) 
+            + " zsize = " + str(self.zsize) + " fov = " + str(self.fieldOfView))
+        # NOTE: each projection in projComplex and projections contains the x, y and z projections
+        for proj in range(0,self.projNum):
+          self.projComplex.append([])
+          for i in range(0,projSize,2):
+            self.projComplex[proj].append( complex(self.projections[proj][i],self.projections[proj][i+1]) )
+
+        print("Num projections " + str(len(self.projComplex)))
+        for projection in self.projComplex:
+          # split into 'ysize' (3) projections
+          for y in range(1,self.ysize+1):
+            axis = projection[self.xsize*(y-1):self.xsize*y]
+            inverseft = scipy.fftpack.ifft(axis) #,npts)
+            self.fts.append( scipy.fftpack.fftshift(inverseft) )
+            self.projRaw.append(axis)
+        print("Num ffts " + str(len(self.fts)))
+
 
 
 """
@@ -113,92 +192,36 @@ def main():
         print(parser.print_help())
         sys.exit(0)
     rawFile = args[0]
-    fp = open(rawFile,"rb")
+    
+    rdr = RawReader(rawFile,legacy=options.legacy,legacy2=options.legacy2)
+    rdr.readFile()
 
-    done = False
-    projections = [] # array of tuples, where each tuple is a series of complex floats
-    projComplex = []
-    triggerTimes = [] #array of trigger times, one triggerTime per each triplet of projections
-    respPhases = []
-    timestamps = []
-    projNum = 0
-    projSize = 0
-    first = True
-    xsize = ysize = zsize = fieldOfView = 0;
-    while not done:
-      xs = ys = zs = fov = 0
-      if options.legacy:
-        xs,ys,zs,fov=readLegacyHeader(fp)
-      elif options.legacy2:
-        xs,ys,zs,fov,trig,resp=readLegacy2Header(fp)
-        triggerTimes.append(trig)
-        respPhases.append(resp)
-      else:
-        xs,ys,zs,fov,trig,resp,timestamp=readHeader(fp)
-        triggerTimes.append(trig)
-        respPhases.append(resp)
-        timestamps.append(timestamp)
-      if (xs == 0 or ys == 0 or zs == 0):
-        done = True;
-        break
-      if first:
-        xsize = xs
-        ysize = ys
-        zsize = zs
-        fieldOfView = fov
-      projSize = xs*ys*zs*2
-      projByteSize = projSize*float_bytes
-      proj = fp.read(projByteSize)
-      if proj is None or len(proj) < projByteSize:
-        print("Could not read projection " + str(projNum) + " stopping here.")
-        break
-      projections.append( struct.unpack('>'+str(projSize)+'d',proj[0:projByteSize]) )
-      projNum+=1
-    print("Read " + str(projNum) + " projections...",end='')
-    print("x size = " + str(xsize) + ", ysize = " + str(ysize) + " zsize = " + str(zsize) + " fov = " + str(fieldOfView))
-    # NOTE: each projection in projComplex and projections contains the x, y and z projections
-    for proj in range(0,projNum):
-      projComplex.append([])
-      for i in range(0,projSize,2):
-        projComplex[proj].append( complex(projections[proj][i],projections[proj][i+1]) )
-
-    fts = []
-    projRaw = []                # This will be the same as projComplex but with the x, y and z projections each in their own row
-    print("Num projections " + str(len(projComplex)))
-    for projection in projComplex:
-      # split into 'ysize' (3) projections
-      for y in range(1,ysize+1):
-        axis = projection[xsize*(y-1):xsize*y]
-        inverseft = scipy.fftpack.ifft(axis) #,npts)
-        fts.append( scipy.fftpack.fftshift(inverseft) )
-        projRaw.append(axis)
-    print("Num ffts " + str(len(fts)))
-
-
-    if len(fts) > 0:
-      plotter = ProjectionPlot(fts,xsize,fieldOfView,trigTimes=triggerTimes,
-        respArr=respPhases,timestamps=timestamps,ysize=ysize,
+    if len(rdr.fts) > 0:
+      plotter = ProjectionPlot(rdr.fts,rdr.xsize,rdr.fieldOfView,trigTimes=rdr.triggerTimes,
+        respArr=rdr.respPhases,timestamps=rdr.timestamps,ysize=rdr.ysize,
         drawStems=(not options.stemless),ylim=options.ylim)
 
     #Save to files:
-    if (options.saveplots or options.savecoords) and len(fts) > 0:
+    if (options.saveplots or options.savecoords) and len(rdr.fts) > 0:
       coordFile = None
       allCoords = []
       allSnrs = []
       if options.savecoords:
         fbase,fext = os.path.splitext(rawFile)
         coordFile = open(fbase + '-coords.txt','w')
-      for i in range(len(projComplex)):
+      for i in range(len(rdr.projComplex)):
         (coords,snrs) = plotter.showProj(i,options.saveplots,options.savecoords,coordFile)
         allCoords.append(coords)
         allSnrs.append(snrs)
         sys.stdout.write("\rSaved projection %i" % i)
         sys.stdout.flush()
+      if coordFile:
+        coordFile.close()
       print('\n')
       print( getStats(allCoords,["X_coord", "Y_coord", "Z_coord"]) )
       print( getStats(allSnrs,["SNR_X", "SNR_Y", "SNR_Z"]) )
       print("Done.")
-    elif len(fts) > 0:
+    elif len(rdr.fts) > 0:
       plotter.showProj(0)
       axprev = pylab.axes([0.7, 0.02, 0.1, 0.075])
       axnext = pylab.axes([0.81, 0.02, 0.1, 0.075])
