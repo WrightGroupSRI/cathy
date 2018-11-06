@@ -8,9 +8,15 @@ For each subdir in current directory:
  - for each file matching the given pattern, create a png directory
   - within this directory, reconstruct the projections
   - then create a video of the projections
+  - output basic stats from the coordinates & snrs to files
+
+Each one of the outputs above is optional.
 
 Note there may be multiple files in the subdirs that match the given pattern.
 
+Run it like this depending on the desired outputs - the command below will 
+generate all three outputs: plots, movies, and stats files:
+ reconDirs.py -p -m -f 
 """
 import os
 import glob
@@ -26,16 +32,21 @@ def makeMovie(dirname,movie_name):
     print(callString)
     os.system(callString)
 
-def recon(fname,dirname,ylim):
+def recon(fname,dirname,ylim,savePlots=True,saveStats=True):
     startDir = os.getcwd()
     os.chdir(dirname)
     # Run the recon script
-    callString = "python " + READRTHRAW_PATH + " " + fname + " -p -s -y " + str(ylim)
+    optStr = " -s " 
+    if savePlots:
+        optStr += "-p "
+    if saveStats:
+        optStr += "-f "
+    callString = "python " + READRTHRAW_PATH + " " + fname + optStr + "-y " + str(ylim)
     print(callString)
     os.system(callString)
     os.chdir(startDir)
 
-def descend(basedir,filepatt,ylim,movie_prefix):
+def descend(basedir,filepatt,ylim,movie_prefix,savePlots=True,saveMovies=True,saveStats=True):
     if movie_prefix == "":
         movie_prefix = os.path.basename( os.path.abspath(basedir) )
     for lname in os.listdir(basedir):
@@ -55,18 +66,27 @@ def descend(basedir,filepatt,ylim,movie_prefix):
                 else:
                     print("Warning: will overwrite files in " + pngDir)
                 absFname = os.path.abspath(fname)
-                recon(absFname,pngDir,ylim)
+                recon(absFname,pngDir,ylim,savePlots=savePlots,saveStats=saveStats)
                 subdBase = os.path.basename(subd)
-                makeMovie(pngDir,movie_prefix+ "-" + subdBase + "-" + fileBase)
+                if saveMovies:
+                    makeMovie(pngDir,movie_prefix+ "-" + subdBase + "-" + fileBase)
 
 def main():
     parser = argparse.ArgumentParser(description="Reconstruct tracking projections")
     parser.add_argument("--pattern",dest="filepattern",default="cathcoil[4-5]-*.projections",help="file pattern")
     parser.add_argument("--ylim",dest="ylim",type=int,default=800,help="y-axis max")
     parser.add_argument("--prefix",dest="prefix",default="",help="prefix for movie files")
+    parser.add_argument("-p","--save-plots",action="store_true",dest="saveplots",
+        help="save plot files")
+    parser.add_argument("-m","--save-movies",action="store_true",dest="savemovies",
+        help="make movie files - plot files must also be saved for this to work")
+    parser.add_argument("-f","--save-stats",action="store_true",dest="savestats",
+        help="save stats files")
+
     args = parser.parse_args()
     print("Filepattern: " + args.filepattern)
-    descend(".",args.filepattern,args.ylim,args.prefix)
+    descend(".",args.filepattern,args.ylim,args.prefix,savePlots=args.saveplots,
+        saveMovies=args.savemovies,saveStats=args.savestats)
     #makeCats(args.PATTERN1, args.PATTERN2,args.coord)
 
 if __name__ == "__main__":
