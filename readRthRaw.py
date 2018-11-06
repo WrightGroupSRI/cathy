@@ -30,6 +30,7 @@ from matplotlib.widgets import Button
 from optparse import OptionParser
 import os
 import snrCalc
+import numpy as np
 if sys.version_info[0] < 3 and sys.version_info[1] < 6:
   raise("Python 2.6+ required...")
 
@@ -162,6 +163,7 @@ class ProjectionPlot:
         coordFile.write("\n")
       elif not savePlots and not saveCoords:
         pylab.draw()
+      return(coords,snrs)
 
     def makeTicks(self):
         zeroPixel = (self.xsize+1)/2.0
@@ -220,7 +222,27 @@ class ProjectionPlot:
         self.index -= 3
         self.index = self.index % len(self.fts)
         self.redraw()
-
+"""
+Return stats of given list of sublists, for each index in the sublists
+ - Sublists must be of the same length
+ - valueNames must be of the same length as sublists
+Example:
+valueList: [ [100,40,20], [110,42,18] ] # [[snr_x, snr_y, snr_z], [snr_x, snr_y, snr_z]]
+valueNames: ["snr_x", "snr_y", "snr_y"]
+"""
+def getStats(valueList,valueNames):
+    #zipVals = zip(*valueList)
+    #for idx,arr in enumerate(zipVals):
+    means = np.mean(valueList,0)
+    mins = np.amin(valueList,0)
+    maxs = np.amax(valueList,0)
+    stds = np.std(valueList,0)
+    statString = ''
+    for idx,name in enumerate(valueNames):
+        statString += "{0} Mean: {1:.2f} StdDev: {2:.2f} Min: {3:.2f} Max: {4:.2f}\n".format(
+        name,means[idx],stds[idx],mins[idx],maxs[idx] )
+    return statString
+    
 def main():
     parser = OptionParser(usage=__doc__)
     parser.add_option("-p", "--plot-save", action="store_true", dest="saveplots",help="save plots to files, no gui", default=False)
@@ -305,14 +327,21 @@ def main():
     #Save to files:
     if (options.saveplots or options.savecoords) and len(fts) > 0:
       coordFile = None
+      allCoords = []
+      allSnrs = []
       if options.savecoords:
         fbase,fext = os.path.splitext(rawFile)
         coordFile = open(fbase + '-coords.txt','w')
       for i in range(len(projComplex)):
-        plotter.showProj(i,options.saveplots,options.savecoords,coordFile)
+        (coords,snrs) = plotter.showProj(i,options.saveplots,options.savecoords,coordFile)
+        allCoords.append(coords)
+        allSnrs.append(snrs)
         sys.stdout.write("\rSaved projection %i" % i)
         sys.stdout.flush()
-      print("\nDone.")
+      print('\n')
+      print( getStats(allCoords,["X_coord", "Y_coord", "Z_coord"]) )
+      print( getStats(allSnrs,["SNR_X", "SNR_Y", "SNR_Z"]) )
+      print("Done.")
     elif len(fts) > 0:
       plotter.showProj(0)
       axprev = pylab.axes([0.7, 0.02, 0.1, 0.075])
