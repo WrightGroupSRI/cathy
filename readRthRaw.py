@@ -145,7 +145,7 @@ class ProjectionPlot:
            self.stemLines.append(stem_lines)
           xres = self.fov/self.xsize
           coords.append(xres*(peakInd-len(mag)/2))
-          pylab.xlabel(self.axis[i]+':'+'{0:.3}'.format(coords[i])+' mm')
+          pylab.xlabel(self.axis[i]+': {0:.2f} mm, SNR: {1}'.format(coords[i],int(round(snr))))
       if savePlots:
         pylab.savefig('proj{0:04d}.png'.format(frame))
         self.clearStems()
@@ -200,13 +200,15 @@ class ProjectionPlot:
                 self.plots[i][0].set_ydata(mag)
                 peak = max(mag)
                 peakInd = list(mag).index(peak)
+                snr = snrCalc.getSNR(mag,peak)
                 if self.drawStems:
                   stem_marker, stem_lines, stem_base = pylab.stem([peakInd],[peak],'r-','ro');
                   self.stemMarkers.append(stem_marker)
                   self.stemBase.append(stem_base)
                   self.stemLines.append(stem_lines)
                 xres = self.fov/self.xsize
-                pylab.xlabel(self.axis[i]+':'+'{0:.3}'.format(xres*(peakInd-len(mag)/2))+' mm')
+                pylab.xlabel(self.axis[i]+': {0:.2f} mm, SNR: {1}'.format(
+                    xres*(peakInd-len(mag)/2),int(round(snr)) ))
             pylab.draw()
 
     def next(self,event):
