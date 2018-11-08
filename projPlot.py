@@ -153,3 +153,13 @@ class ProjectionPlot:
         self.index -= 3
         self.index = self.index % len(self.fts)
         self.redraw()
+    
+    def launchGUI(self):
+        self.showProj(0)
+        axprev = pylab.axes([0.7, 0.02, 0.1, 0.075])
+        axnext = pylab.axes([0.81, 0.02, 0.1, 0.075])
+        bnext = Button(axnext, 'Next')
+        bnext.on_clicked(self.next)
+        bprev = Button(axprev, 'Previous')
+        bprev.on_clicked(self.prev)
+        pylab.show()

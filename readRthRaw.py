@@ -232,16 +232,10 @@ def main():
           statFile.write(coordStats + '\n')
           statFile.write(snrStats)
       print("Done.")
-    elif len(rdr.fts) > 0:
-      plotter.showProj(0)
-      axprev = pylab.axes([0.7, 0.02, 0.1, 0.075])
-      axnext = pylab.axes([0.81, 0.02, 0.1, 0.075])
-      bnext = Button(axnext, 'Next')
-      bnext.on_clicked(plotter.next)
-      bprev = Button(axprev, 'Previous')
-      bprev.on_clicked(plotter.prev)
-
-      pylab.show()
+    elif len(rdr.fts) > 0: # launch plotter GUI
+      plotter.launchGUI()
+    else:
+      print("Nothing to see here. Exiting.") 
 
     sys.exit(0)
 
