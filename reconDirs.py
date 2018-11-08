@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 Script to reconstruct tracking projections from subdirectories and create movies
-Requires: readRthRaw.py & theora_png2theora
+Requires: readRthRaw.py, snrCalc, projPlot & theora_png2theora
 
 For each subdir in current directory:
  - for each file matching the given pattern, create a png directory
@@ -32,12 +32,22 @@ READRTHRAW_PATH = BASE_DIR + "/readRthRaw.py"
 THEORA_EXEC = "theora_png2theora"
 
 def makeMovie(dirname,movie_name):
+    """
+    Use theora_png2theora to create a movie from png files
+    - dirname: directory containing png files of the form "proj0000.png"
+    - movie_name: file base name of theora-encoded movie to be created
+    """
     dirname = os.path.abspath(dirname)
     callString = THEORA_EXEC + " " + dirname + "/proj%04d.png -f 10 -F 1 -v 10 -o " + movie_name + ".ogv"
     print(callString)
     os.system(callString)
 
 def recon(fname,dirname,ylim,savePlots=True,saveStats=True,statsPrefix=""):
+    """ Reconstruct projections from file "fname"
+     - projection plots will be saved to "dirname" if savePlots is set
+     - basic stats will be saved to a file if saveStats is true
+     - statsPrefix: file prefix (can indicate file path) for stats file
+    """
     startDir = os.getcwd()
     os.chdir(dirname)
     # Run the recon script
@@ -54,6 +64,14 @@ def recon(fname,dirname,ylim,savePlots=True,saveStats=True,statsPrefix=""):
     os.chdir(startDir)
 
 def descend(basedir,filepatt,ylim,movie_prefix,savePlots=True,saveMovies=True,saveStats=True):
+    """
+    Will search subdirectories (1 level only) of the basedir for filepatt files
+    containing RTHawk projection recordings
+     - ylim: the Y-axis maximum (so that everything is scaled the same way)
+     - savePlots: reconstruct these into projection plots
+     - saveMovies: make movies from the plots
+     - saveStats: save basic stats from each recording into files
+    """
     if movie_prefix == "":
         movie_prefix = os.path.basename( os.path.abspath(basedir) )
     for lname in os.listdir(basedir):
@@ -96,7 +114,6 @@ def main():
     print("Filepattern: " + args.filepattern)
     descend(".",args.filepattern,args.ylim,args.prefix,savePlots=args.saveplots,
         saveMovies=args.savemovies,saveStats=args.savestats)
-    #makeCats(args.PATTERN1, args.PATTERN2,args.coord)
 
 if __name__ == "__main__":
     main()

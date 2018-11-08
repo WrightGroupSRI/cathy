@@ -7,17 +7,23 @@
     be selected for plotting.
 
     Plots in png format and/or coordinates & physiology data in text format can be output instead using
-    the "-p" and "-c" options.
+    the "-p" and "-c" options. Basic stats on the coordinates and peaks can be output using the "-f"
+    option.
 
     Note that respiratory data from RTHawk is scaled by 10^5 to give an integer (the respiratory information
     from RTHawk is a float between 0 and 1).
 
+    Run readRthRaw without any arguments for details on each option.
+
     Usage examples:
-        ./readRthRaw.py data/file-0000.projections
+        > ./readRthRaw.py data/file-0000.projections
+        - This will display the projections in a window
 
-        ./readRthRaw.py data/file-0000.projections -p
-
-        ./readRthRaw.py data/file-0000.projections -c
+        > ./readRthRaw.py data/file-0000.projections -p
+        - This will save the projections to PNG files
+        
+        > ./readRthRaw.py data/file-0000.projections -c
+        - This will save the peak coordinates to txt files
 
 """
 from __future__ import print_function

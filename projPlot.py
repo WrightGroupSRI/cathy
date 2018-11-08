@@ -1,3 +1,14 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+"""
+Create plots of tracking sequence projections
+
+- Pass in projections and metadata read from the RTHawk projection file.
+- Plots can be saved or displayed in a window.
+- Peaks can be displayed or saved into coordinate files; note that peaks are 
+calculated using a simple max-peak (not a centroid).
+"""
+
 from __future__ import print_function
 import pylab
 from matplotlib.widgets import Button
@@ -10,6 +21,9 @@ if sys.version_info[0] < 3 and sys.version_info[1] < 6:
 
 class ProjectionPlot:
     def __init__(self,fts,xsize,fov,mode='magnitude',tickDistance=100,trigTimes=[],respArr=[], timestamps=[], ysize=3, drawStems=True, ylim=100):
+        """ Set up plotter
+        fts: all the fourier-transformed projections in one array; x, y, and z each are in their own row
+        """
         self.fts = fts
         self.xsize = xsize
         self.fov = fov
@@ -33,8 +47,10 @@ class ProjectionPlot:
         self.ylim = ylim
 
     def showProj(self,frame, savePlots=False, saveCoords=False, coordFile=None):
-      # fts: all the fourier-transformed projections in one array; x, y, and z each are in their own row
-      # frame: which projection to show
+      """
+      Display / save one projection
+      - frame: which projection to show
+      """
       self.index = frame*self.ysize
       useTrig = False
       if self.useTrig:
@@ -45,7 +61,6 @@ class ProjectionPlot:
         timestamp = self.timeStamps[frame]
       del self.plots[:]
       self.clearStems()
-      #print "Index " + str(index)
       if len(self.fts) < self.index+self.ysize or self.index < 0:
         print("Frame " + str(frame) + " does not exist")
         return
