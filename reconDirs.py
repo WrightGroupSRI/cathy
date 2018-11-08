@@ -18,9 +18,14 @@ Run it like this depending on the desired outputs - the command below will
 generate all three outputs: plots, movies, and stats files:
  reconDirs.py -p -m -f 
 """
+from __future__ import print_function
 import os
 import glob
 import argparse
+import sys
+
+if sys.version_info[0] < 3 and sys.version_info[1] < 6:
+  raise("Python 2.6+ required...")
 
 BASE_DIR=os.path.dirname(__file__)
 READRTHRAW_PATH = BASE_DIR + "/readRthRaw.py"
