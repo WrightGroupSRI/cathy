@@ -68,9 +68,9 @@ def descend(basedir,filepatt,ylim,movie_prefix,savePlots=True,saveMovies=True,sa
                     filePrefix = filePrefix[:filePrefix.find("-")]
                     fileBase = fileBase[:fileBase.find("-")]
                 pngDir = filePrefix + "-pngDir"
-                if not os.path.isdir(pngDir):
+                if savePlots and not os.path.isdir(pngDir):
                     os.mkdir(pngDir)
-                else:
+                elif savePlots:
                     print("Warning: will overwrite files in " + pngDir)
                 absFname = os.path.abspath(fname)
                 subdBase = os.path.basename(subd)
