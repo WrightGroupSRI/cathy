@@ -79,7 +79,7 @@ More usage examples available in the module help.
 
 **To reconstruct coil 4 & coil 5 projections within the subdirectories of the current directory and save these plots and stats to files:**
 ```
-/path/to/reconDirs.py -p -s
+/path/to/reconDirs.py -p -f
 ```
 
 
