@@ -36,6 +36,8 @@ Reads and plots catheter raw data from a single projection recording. It can eit
 - the peak locations
 - stats on the peaks and SNRs
 
+The "legacy header" options are only for older recordings.
+ 
 ### reconDirs
 Reconstructs projection files in batch mode - this will find projection files given a pattern within subdirectories of the current directory and optionally:
 - save projection plots from each projection recording
@@ -62,17 +64,20 @@ or: ```./reconDirs.py```
 ## Usage Examples
 More usage examples available in the module help.
 
-To show plots from a projection file:
+**To show plots from a projection file:**
 ```
 /path/to/readRthRaw.py /mydir/data/cathcoil4-0000.projections
 ```
-
-To save projection plots and stats files from a projection file:
+**To show plots from a projection file with a y-axis limit of 600 and no red stems (which indicate peaks):**
+```
+/path/to/readRthRaw.py /mydir/data/cathcoil4-0000.projections -s -y 600
+```
+**To save projection plots and stats files from a projection file:**
 ```
 /path/to/readRthRaw.py /mydir/data/cathcoil5-0001.projections -p -f
 ```
 
-To reconstruct coil 4 & coil 5 projections within the subdirectories of the current directory and save these plots and stats to files:
+**To reconstruct coil 4 & coil 5 projections within the subdirectories of the current directory and save these plots and stats to files:**
 ```
 /path/to/reconDirs.py -p -s
 ```
