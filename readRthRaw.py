@@ -63,7 +63,8 @@ class RawReader:
         self.xsize = 0
         self.ysize = 0
         self.zsize = 0
-        self.fieldOfView = 0       
+        self.fieldOfView = 0
+        self.version = 0
  
     def readHeader(self,fp):
       hdr = fp.read(44) # 3 32-bit ints + 1 64-bit int + 3 64-bit floats = 44 bytes
@@ -106,10 +107,25 @@ class RawReader:
         fov = struct.unpack('>d',hdr[12:20])[0]
         return (xsize,ysize,zsize,fov)
     
+    def checkFileHeader(self,fp):
+        hdrBytes = fp.peek(8)
+        fmt = b''.join(struct.unpack('4c',hdrBytes[0:4]))
+        fmt = fmt.decode('ascii')
+        version = struct.unpack('>i',hdrBytes[4:8])[0]
+        print('Peek: fmt = ' + fmt + ' , version = ' + str(version))
+        if (fmt != "CTHX" or version <= 0):
+          return False # legacy format
+        else:
+          self.version = int(version)
+          fp.read(8) # Digest the header bytes
+          return True
+
     def readFile(self,rawFile = ""):
         if not rawFile:
             rawFile = self.rawFile
         fp = open(rawFile,"rb")
+        if self.checkFileHeader(fp):
+            print('Cath raw file version: ' + str(self.version))
         done = False
         first = True
         self.setup()
