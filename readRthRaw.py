@@ -43,10 +43,9 @@ if sys.version_info[0] < 3 and sys.version_info[1] < 6:
 float_bytes = 8 #These are being written on a 64-bit system
 
 class RawReader:
-    def __init__(self,fname="",float_bytes=8,legacy=False,legacy2=False):
+    def __init__(self,fname="",float_bytes=8,legacy_version=0):
         self.rawFile = fname
-        self.legacy = legacy
-        self.legacy2 = legacy2
+        self.legacy = legacy_version
         self.float_bytes = float_bytes
         self.setup()
 
@@ -112,7 +111,6 @@ class RawReader:
         fmt = b''.join(struct.unpack('4c',hdrBytes[0:4]))
         fmt = fmt.decode('ascii')
         version = struct.unpack('>i',hdrBytes[4:8])[0]
-        print('Peek: fmt = ' + fmt + ' , version = ' + str(version))
         if (fmt != "CTHX" or version <= 0):
           return False # legacy format
         else:
@@ -126,14 +124,17 @@ class RawReader:
         fp = open(rawFile,"rb")
         if self.checkFileHeader(fp):
             print('Cath raw file version: ' + str(self.version))
+        elif not self.legacy:
+            self.legacy = 3 # Assume most recent legacy format
+            print('Detected legacy format, assuming version ' + str(self.legacy))
         done = False
         first = True
         self.setup()
         while not done:
           xs = ys = zs = fov = 0
-          if self.legacy:
+          if self.legacy == 1:
             xs,ys,zs,fov=self.readLegacyHeader(fp)
-          elif self.legacy2:
+          elif self.legacy == 2:
             xs,ys,zs,fov,trig,resp=self.readLegacy2Header(fp)
             self.triggerTimes.append(trig)
             self.respPhases.append(resp)
@@ -201,8 +202,9 @@ def main():
     parser = OptionParser(usage=__doc__)
     parser.add_option("-p", "--plot-save", action="store_true", dest="saveplots",help="save plots to files, no gui", default=False)
     parser.add_option("-c", "--coord-save", action="store_true", dest="savecoords",help="save coordinates to files, no gui", default=False)
-    parser.add_option("-l", "--legacy", action="store_true", dest="legacy",help="read legacy files with no trig, resp, or timestamp values", default=False)
-    parser.add_option("-m", "--legacy2", action="store_true", dest="legacy2",help="read legacy files with trig and resp but no timestamp values", default=False)
+    parser.add_option("-l", "--legacy_version", metavar="LEGACY_VERSION",dest="legacy", type="choice",
+        help="read legacy files missing trig, resp, and/or timestamp values [0,1,2,3]",default='0',
+        choices=['0','1','2','3'])
     parser.add_option("-s", "--stemless", action="store_true", dest="stemless", help="stemless - do not display vertical red lines for peak values", default=False)
     parser.add_option("-y", "--ylim", dest="ylim",help="y-axis limit", metavar="YLIM", type="int", default=100)
     parser.add_option("-f", "--statsfile", action="store_true", dest="statsfile",help="save stats to files, no gui", default=False)
@@ -214,7 +216,7 @@ def main():
         sys.exit(0)
     rawFile = args[0]
     
-    rdr = RawReader(rawFile,legacy=options.legacy,legacy2=options.legacy2)
+    rdr = RawReader(rawFile,legacy_version=int(options.legacy))
     rdr.readFile()
 
     if len(rdr.fts) > 0:
