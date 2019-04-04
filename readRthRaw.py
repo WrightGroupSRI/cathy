@@ -64,8 +64,8 @@ class RawReader:
         self.zsize = 0
         self.fieldOfView = 0
         self.version = 0
- 
-    def readHeader(self,fp):
+
+    def readLegacy3Header(self,fp):
       hdr = fp.read(44) # 3 32-bit ints + 1 64-bit int + 3 64-bit floats = 44 bytes
       if not hdr:
         print("reached EOF")
@@ -114,13 +114,15 @@ class RawReader:
         if (fmt != "CTHX" or version <= 0):
           return False # legacy format
         else:
-          self.version = int(version)
+          self.version = version
+          self.legacy = 0
           fp.read(8) # Digest the header bytes
           return True
 
     def readFile(self,rawFile = ""):
         if not rawFile:
             rawFile = self.rawFile
+        self.setup()
         fp = open(rawFile,"rb")
         if self.checkFileHeader(fp):
             print('Cath raw file version: ' + str(self.version))
@@ -129,7 +131,6 @@ class RawReader:
             print('Detected legacy format, assuming version ' + str(self.legacy))
         done = False
         first = True
-        self.setup()
         while not done:
           xs = ys = zs = fov = 0
           if self.legacy == 1:
@@ -138,11 +139,17 @@ class RawReader:
             xs,ys,zs,fov,trig,resp=self.readLegacy2Header(fp)
             self.triggerTimes.append(trig)
             self.respPhases.append(resp)
-          else:
-            xs,ys,zs,fov,trig,resp,timestamp=self.readHeader(fp)
+          elif self.legacy == 3:
+            xs,ys,zs,fov,trig,resp,timestamp=self.readLegacy3Header(fp)
             self.triggerTimes.append(trig)
             self.respPhases.append(resp)
             self.timestamps.append(timestamp)
+          elif self.legacy == 0 and self.version == 1:
+            print('Not yet implemented')
+            return
+          else:
+            print('Unknown format, version=' + str(self.version) + ', legacy=' + str(self.legacy))
+            return
           if (xs == 0 or ys == 0 or zs == 0):
             done = True;
             break
