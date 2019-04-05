@@ -84,6 +84,14 @@ class RawReader:
       else:
         return struct.unpack('>d',hdr[0:8])[0]
 
+    def readTimestamp(self,fp):
+      hdr = fp.read(8)
+      if not hdr:
+          print("reached EOF")
+          return (-1,False)
+      else:
+        return (struct.unpack('>q',hdr[0:8])[0],True)
+
     def readLegacy3Header(self,fp):
       (xsize,ysize,zsize) = self.readProjectionSizes(fp)
       NULL_TUPLE = (0,0,0,0,0,0,0)
@@ -92,14 +100,16 @@ class RawReader:
       fov = self.readFOV(fp)
       if fov == -1:
         return NULL_TUPLE
-      hdr = fp.read(24) # 3 64-bit floats = 24 bytes
+      timestamp,ok = self.readTimestamp(fp)
+      if not ok:
+        return NULL_TUPLE
+      hdr = fp.read(16) # 2 64-bit floats = 24 bytes
       if not hdr:
         print("reached EOF")
         return NULL_TUPLE
       else:
-        timestamp = struct.unpack('>q',hdr[0:8])[0]
-        trig = struct.unpack('>d',hdr[8:16])[0]
-        resp = struct.unpack('>d',hdr[16:24])[0]
+        trig = struct.unpack('>d',hdr[0:8])[0]
+        resp = struct.unpack('>d',hdr[8:16])[0]
         return (xsize,ysize,zsize,fov,trig,resp,timestamp)
 
     def readLegacy2Header(self,fp):
