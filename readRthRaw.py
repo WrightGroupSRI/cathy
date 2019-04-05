@@ -76,20 +76,30 @@ class RawReader:
         zsize = struct.unpack('>i',hdr[8:12])[0]
         return (xsize,ysize,zsize)
 
+    def readFOV(self,fp):
+      hdr = fp.read(8)
+      if not hdr:
+        print("reached EOF")
+        return -1
+      else:
+        return struct.unpack('>d',hdr[0:8])[0]
+
     def readLegacy3Header(self,fp):
       (xsize,ysize,zsize) = self.readProjectionSizes(fp)
       NULL_TUPLE = (0,0,0,0,0,0,0)
       if xsize == 0 and ysize == 0 and zsize == 0:
         return NULL_TUPLE
-      hdr = fp.read(32) # 1 64-bit int + 3 64-bit floats = 32 bytes
+      fov = self.readFOV(fp)
+      if fov == -1:
+        return NULL_TUPLE
+      hdr = fp.read(24) # 3 64-bit floats = 24 bytes
       if not hdr:
         print("reached EOF")
         return NULL_TUPLE
       else:
-        fov = struct.unpack('>d',hdr[0:8])[0]
-        timestamp = struct.unpack('>q',hdr[8:16])[0]
-        trig = struct.unpack('>d',hdr[16:24])[0]
-        resp = struct.unpack('>d',hdr[24:32])[0]
+        timestamp = struct.unpack('>q',hdr[0:8])[0]
+        trig = struct.unpack('>d',hdr[8:16])[0]
+        resp = struct.unpack('>d',hdr[16:24])[0]
         return (xsize,ysize,zsize,fov,trig,resp,timestamp)
 
     def readLegacy2Header(self,fp):
@@ -97,14 +107,16 @@ class RawReader:
       NULL_TUPLE = (0,0,0,0,0,0)
       if xsize == 0 and ysize == 0 and zsize == 0:
         return NULL_TUPLE
-      hdr = fp.read(24) # 3 64-bit floats = 24 bytes
+      fov = self.readFOV(fp)
+      if fov == -1:
+        return NULL_TUPLE
+      hdr = fp.read(16) # 2 64-bit floats = 24 bytes
       if not hdr:
         print("reached EOF")
         return NULL_TUPLE
       else:
-        fov = struct.unpack('>d',hdr[0:8])[0]
-        trig = struct.unpack('>d',hdr[8:16])[0]
-        resp = struct.unpack('>d',hdr[16:24])[0]
+        trig = struct.unpack('>d',hdr[0:8])[0]
+        resp = struct.unpack('>d',hdr[8:16])[0]
         return (xsize,ysize,zsize,fov,trig,resp)
 
     def readLegacyHeader(self,fp):
@@ -112,12 +124,10 @@ class RawReader:
       NULL_TUPLE = (0,0,0,0)
       if xsize == 0 and ysize == 0 and zsize == 0:
         return NULL_TUPLE
-      hdr = fp.read(8) # 1 64-bit floats = 8 bytes
-      if not hdr:
-        print("reached EOF")
-        return (0,0,0,0)
+      fov = self.readFOV(fp)
+      if fov == -1:
+        return NULL_TUPLE
       else:
-        fov = struct.unpack('>d',hdr[0:8])[0]
         return (xsize,ysize,zsize,fov)
     
     def checkFileHeader(self,fp):
