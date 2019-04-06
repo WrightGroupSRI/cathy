@@ -20,7 +20,9 @@ if sys.version_info[0] < 3 and sys.version_info[1] < 6:
   raise("Python 2.6+ required...")
 
 class ProjectionPlot:
-    def __init__(self,fts,xsize,fov,mode='magnitude',tickDistance=100,trigTimes=[],respArr=[], timestamps=[], ysize=3, drawStems=True, ylim=100):
+    def __init__(self,fts,xsize,fov,mode='magnitude',tickDistance=100,
+        trigTimes=[],respArr=[], timestamps=[], ysize=3, drawStems=True,
+        ylim=100, pgArr=[], ecg1Arr=[], ecg2Arr=[]):
         """ Set up plotter
         fts: all the fourier-transformed projections in one array; x, y, and z each are in their own row
         """
@@ -45,6 +47,13 @@ class ProjectionPlot:
         self.ysize = ysize
         self.drawStems = drawStems
         self.ylim = ylim
+        self.pgArr = pgArr
+        self.ecg1Arr = ecg1Arr
+        self.ecg2Arr = ecg2Arr
+        self.usePG = len(pgArr) > 0
+        self.useECG1 = len(ecg1Arr) > 0
+        self.useECG2 = len(ecg2Arr) > 0
+        
 
     def showProj(self,frame, savePlots=False, saveCoords=False, coordFile=None):
       """
@@ -106,6 +115,12 @@ class ProjectionPlot:
           coordFile.write(" %d" % (trig))
         if self.useResp:
           coordFile.write(" %d" % (resp * (10**5)))
+        if self.usePG:
+          coordFile.write(" %f" % (self.pgArr[frame]))
+        if self.useECG1:
+          coordFile.write(" %f" % (self.ecg1Arr[frame]))
+        if self.useECG2:
+          coordFile.write(" %f" % (self.ecg2Arr[frame]))
         coordFile.write("\n")
       elif not savePlots and not saveCoords:
         pylab.draw()

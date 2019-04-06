@@ -55,6 +55,9 @@ class RawReader:
         self.triggerTimes = [] #array of trigger times, one triggerTime per each triplet of projections
         self.respPhases = []
         self.timestamps = []
+        self.pg = []
+        self.ecg1 = []
+        self.ecg2 = []
         self.projNum = 0
         self.projSize = 0
         self.fts = []
@@ -103,7 +106,24 @@ class RawReader:
   
     def readResp(self,fp):
       return self.readFloat64(fp)
-  
+
+    def readTrace(self,fp):
+      return self.readFloat64(fp)
+
+    def readV1Header(self,fp):
+      (xsize,ysize,zsize,ok) = self.readProjectionSizes(fp)
+      NULL_TUPLE = (0,0,0,0,0,0,0,0,0,0)
+      fov,ok = self.readFOV(fp)
+      timestamp,ok = self.readTimestamp(fp)
+      trig,ok = self.readTrig(fp)
+      resp,ok = self.readResp(fp)
+      pg,ok = self.readTrace(fp)
+      ecg1,ok = self.readTrace(fp)
+      ecg2,ok = self.readTrace(fp)
+      if not ok:
+        return NULL_TUPLE
+      return (xsize,ysize,zsize,fov,trig,resp,timestamp,pg,ecg1,ecg2)
+
     def readLegacy3Header(self,fp):
       (xsize,ysize,zsize,ok) = self.readProjectionSizes(fp)
       NULL_TUPLE = (0,0,0,0,0,0,0)
@@ -174,8 +194,13 @@ class RawReader:
             self.respPhases.append(resp)
             self.timestamps.append(timestamp)
           elif self.legacy == 0 and self.version == 1:
-            print('Not yet implemented')
-            return
+            xs,ys,zs,fov,trig,resp,timestamp,pg,ecg1,ecg2=self.readV1Header(fp)
+            self.triggerTimes.append(trig)
+            self.respPhases.append(resp)
+            self.timestamps.append(timestamp)
+            self.pg.append(pg)
+            self.ecg1.append(ecg1)
+            self.ecg2.append(ecg2)
           else:
             print('Unknown format, version=' + str(self.version) + ', legacy=' + str(self.legacy))
             return
@@ -258,7 +283,8 @@ def main():
     if len(rdr.fts) > 0:
       plotter = ProjectionPlot(rdr.fts,rdr.xsize,rdr.fieldOfView,trigTimes=rdr.triggerTimes,
         respArr=rdr.respPhases,timestamps=rdr.timestamps,ysize=rdr.ysize,
-        drawStems=(not options.stemless),ylim=options.ylim)
+        drawStems=(not options.stemless),ylim=options.ylim,pgArr=rdr.pg,
+        ecg1Arr=rdr.ecg1,ecg2Arr=rdr.ecg2)
 
     #Save to files:
     if (options.saveplots or options.savecoords or options.statsfile) and len(rdr.fts) > 0:
