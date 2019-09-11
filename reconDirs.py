@@ -38,7 +38,7 @@ def makeMovie(dirname,movie_name):
     - movie_name: file base name of theora-encoded movie to be created
     """
     dirname = os.path.abspath(dirname)
-    callString = THEORA_EXEC + " " + dirname + "/proj%04d.png -f 10 -F 1 -v 10 -o " + movie_name + ".ogv"
+    callString = THEORA_EXEC + " " + dirname + "/proj%04d.png -f 20 -F 1 -v 10 -o " + movie_name + ".ogv"
     print(callString)
     os.system(callString)
 
@@ -51,7 +51,7 @@ def recon(fname,dirname,ylim,savePlots=True,saveStats=True,statsPrefix=""):
     startDir = os.getcwd()
     os.chdir(dirname)
     # Run the recon script
-    optStr = " -s " 
+    optStr = " "
     if savePlots:
         optStr += "-p "
     if saveStats:
