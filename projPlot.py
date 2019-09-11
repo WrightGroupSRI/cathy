@@ -96,6 +96,8 @@ class ProjectionPlot:
           pylab.xticks(self.tick_locs,self.tick_labels);
           if self.drawStems:
            stem_marker, stem_lines, stem_base = pylab.stem([peakInd],[peak],'r-','ro');
+           pylab.setp(stem_marker,alpha=0.4)
+           pylab.setp(stem_lines,alpha=0.4)
            self.stemMarkers.append(stem_marker)
            self.stemBase.append(stem_base)
            self.stemLines.append(stem_lines)
@@ -166,6 +168,8 @@ class ProjectionPlot:
                 snr = snrCalc.getSNR(mag,peak)
                 if self.drawStems:
                   stem_marker, stem_lines, stem_base = pylab.stem([peakInd],[peak],'r-','ro');
+                  pylab.setp(stem_marker,alpha=0.4)
+                  pylab.setp(stem_lines,alpha=0.4)
                   self.stemMarkers.append(stem_marker)
                   self.stemBase.append(stem_base)
                   self.stemLines.append(stem_lines)
