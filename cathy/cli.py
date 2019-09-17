@@ -60,7 +60,7 @@ def apply_ukf(src, dst, distal, proximal):
 
     # Is there any data?
     if len(src_info) == 0:
-        click.echo("No cathcoords found in input. Done!")
+        logger.info("No cathcoords found in input. Done!")
         return
 
     logger.info("Found {} cathcoords recordings".format(len(src_info)))
