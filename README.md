@@ -1,3 +1,3 @@
 # Hello `cathy`!
 
-This is a command line application for manipulating cathter data.
+This is a command line application for manipulating catheter data.
