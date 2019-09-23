@@ -7,26 +7,26 @@ case of the basic active tracking sequence, it contains X, Y, and Z projections
 in that order.
 
 ## Requirements
-- Python 2.6+
+- Python 3+
 - matplotlib
 - scipy
 
-**NOTE** This code has only been tested with Python 2.7 & 3.6 on Ubuntu 14.04 & 16.04.
+**NOTE** This code has only been tested with Python 3.6 on Ubuntu 14.04 & 16.04.
 
 ### Set up the environment
 This will likely **NOT** be necessary if you are already using the recommended packages above. If the code does not work, you can set up your packages as described below.
 
 If you are using [conda](https://conda.io/docs/), you can replicate the environment using the included environment.yml file:
 ```
-conda create -f environment.yml
+conda env create -f environment.yml
 ```
 If you're on conda 4.4+:
 ```
-conda activate hawkrdr
+conda activate hawkr
 ```
 Otherwise, using conda < 4.4 on Mac OS X / Linux:
 ```
-source activate hawkrdr
+source activate hawkr
 ```
 ## Scripts
 Two scripts can be run from the command line.
@@ -43,6 +43,8 @@ Reconstructs projection files in batch mode - this will find projection files gi
 - save projection plots from each projection recording
 - create a movie of each projection recording
 - save basic stats from each projection recording
+
+This works on systems with theora_png2theora installed.
 
 ### Other files
 These are used by the scripts:
