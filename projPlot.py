@@ -20,6 +20,13 @@ import numpy as np
 if sys.version_info[0] < 3 and sys.version_info[1] < 6:
   raise("Python 2.6+ required...")
 
+def getPeakInfo(projMag):
+    """ Get index of peak, SNR, and amplitude of peak from a magnitude projection"""
+    peakAmp = max(projMag)
+    peakInd = list(projMag).index(peakAmp)
+    snr = snrCalc.getSNR(projMag,peakAmp)
+    return (peakInd,snr,peakAmp)
+
 class ProjectionPlot:
     def __init__(self,fts,xsize,fov,mode='magnitude',tickDistance=100,
         trigTimes=[],respArr=[], timestamps=[], ysize=3, drawStems=True,
@@ -86,10 +93,8 @@ class ProjectionPlot:
           pylab.title(self.axis[i] + ' Phase Projection');pylab.xticks(self.tick_locs,self.tick_labels)
         else:
           mag = np.abs(self.fts[self.index+i])
-          peak = max(mag)
-          peakInd = list(mag).index(peak)
+          (peakInd,snr,peak) = getPeakInfo(mag)
           self.plots.append( pylab.plot(mag) )
-          snr = snrCalc.getSNR(mag,peak)
           snrs.append(snr)
           pylab.title(self.axis[i] + ' Magnitude Projection');
           pylab.ylim([0,self.ylim]);
@@ -164,9 +169,7 @@ class ProjectionPlot:
             else:
                 mag = np.abs(self.fts[self.index+i])
                 self.plots[i][0].set_ydata(mag)
-                peak = max(mag)
-                peakInd = list(mag).index(peak)
-                snr = snrCalc.getSNR(mag,peak)
+                peakInd,snr,peak = getPeakInfo(mag)
                 if self.drawStems:
                   stem_marker, stem_lines, stem_base = pylab.stem([peakInd],[peak],'r-','ro');
                   pylab.setp(stem_marker,alpha=0.4)
