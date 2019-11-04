@@ -27,6 +27,15 @@ def getPeakInfo(projMag):
     snr = snrCalc.getSNR(projMag,peakAmp)
     return (peakInd,snr,peakAmp)
 
+def getCoord(index,xsize,fov):
+    """Return the coordinate for the index in mm
+    index - desired index in projection
+    xsize - length of projection (number of samples / readout length)
+    fov - field of view in mm
+    """
+    xres = fov/xsize
+    return(xres*(index-(xsize/2)))
+
 class ProjectionPlot:
     def __init__(self,fts,xsize,fov,mode='magnitude',tickDistance=100,
         trigTimes=[],respArr=[], timestamps=[], ysize=3, drawStems=True,
@@ -94,6 +103,7 @@ class ProjectionPlot:
         else:
           mag = np.abs(self.fts[self.index+i])
           (peakInd,snr,peak) = getPeakInfo(mag)
+          pkCoord = getCoord(peakInd,self.xsize,self.fov)
           self.plots.append( pylab.plot(mag) )
           snrs.append(snr)
           pylab.title(self.axis[i] + ' Magnitude Projection');
@@ -107,8 +117,7 @@ class ProjectionPlot:
            self.stemMarkers.append(stem_marker)
            self.stemBase.append(stem_base)
            self.stemLines.append(stem_lines)
-          xres = self.fov/self.xsize
-          coords.append(xres*(peakInd-len(mag)/2))
+          coords.append(pkCoord)
           pylab.xlabel(self.axis[i]+': {0:.2f} mm, SNR: {1}'.format(coords[i],int(round(snr))))
       if savePlots:
         pylab.savefig('proj{0:04d}.png'.format(frame))
@@ -170,6 +179,7 @@ class ProjectionPlot:
                 mag = np.abs(self.fts[self.index+i])
                 self.plots[i][0].set_ydata(mag)
                 peakInd,snr,peak = getPeakInfo(mag)
+                pkCoord = getCoord(peakInd,self.xsize,self.fov)
                 if self.drawStems:
                   stem_marker, stem_lines, stem_base = pylab.stem([peakInd],[peak],'r-','ro');
                   pylab.setp(stem_marker,alpha=0.4)
@@ -177,9 +187,8 @@ class ProjectionPlot:
                   self.stemMarkers.append(stem_marker)
                   self.stemBase.append(stem_base)
                   self.stemLines.append(stem_lines)
-                xres = self.fov/self.xsize
                 pylab.xlabel(self.axis[i]+': {0:.2f} mm, SNR: {1}'.format(
-                    xres*(peakInd-len(mag)/2),int(round(snr)) ))
+                    pkCoord,int(round(snr)) ))
             pylab.draw()
 
     def next(self,event):
