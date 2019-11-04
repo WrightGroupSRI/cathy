@@ -15,6 +15,7 @@ from matplotlib.widgets import Button
 import snrCalc
 import sys
 import math
+import numpy as np
 
 if sys.version_info[0] < 3 and sys.version_info[1] < 6:
   raise("Python 2.6+ required...")
@@ -84,7 +85,7 @@ class ProjectionPlot:
           self.plots[i].append( pylab.plot(scipy.angle(self.fts[self.index+i])) )
           pylab.title(self.axis[i] + ' Phase Projection');pylab.xticks(self.tick_locs,self.tick_labels)
         else:
-          mag = abs(self.fts[self.index+i])
+          mag = np.abs(self.fts[self.index+i])
           peak = max(mag)
           peakInd = list(mag).index(peak)
           self.plots.append( pylab.plot(mag) )
@@ -161,7 +162,7 @@ class ProjectionPlot:
             if (self.mode == "phase"):
                 self.plots[i][0].set_ydata(scipy.angle(self.fts[self.index+i]))
             else:
-                mag = abs(self.fts[self.index+i])
+                mag = np.abs(self.fts[self.index+i])
                 self.plots[i][0].set_ydata(mag)
                 peak = max(mag)
                 peakInd = list(mag).index(peak)
