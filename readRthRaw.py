@@ -258,7 +258,29 @@ def getStats(valueList,valueNames):
         statString += "{0} Mean: {1:.2f} StdDev: {2:.2f} Min: {3:.2f} Max: {4:.2f}\n".format(
         name,means[idx],stds[idx],mins[idx],maxs[idx] )
     return statString
-    
+
+def getPeaks(rdr):
+    """Return peak coordinates, SNRs, and amplitudes from all the projections read into RawReader"""
+    allSnrs = []
+    allCoords = []
+    allPkAmps = []
+    numProj = len(rdr.projComplex)
+    for i in range(numProj):
+        snr_proj = []
+        coord_proj = []
+        pkAmp_proj = []
+        for j in range(0,rdr.ysize):
+            mag = np.abs(rdr.fts[i*rdr.ysize+j])
+            (peakInd,snr,peak) = getPeakInfo(mag)
+            pkCoord = getCoord(peakInd,rdr.xsize,rdr.fieldOfView)
+            snr_proj.append(snr)
+            coord_proj.append(pkCoord)
+            pkAmp_proj.append(peak)
+        allSnrs.append(snr_proj)
+        allCoords.append(coord_proj)
+        allPkAmps.append(pkAmp_proj)
+    return (allCoords, allSnrs, allPkAmps)
+
 def main():
     parser = OptionParser(usage=__doc__)
     parser.add_option("-p", "--plot-save", action="store_true", dest="saveplots",help="save plots to files, no gui", default=False)
@@ -283,15 +305,35 @@ def main():
         print("Nothing to see here. Exiting.")
         sys.exit(0)
 
+    if (options.statsfile):
+        allCoords,allSnrs,allPkAmps = getPeaks(rdr)
+        coordStats = getStats(allCoords,["X_coord", "Y_coord", "Z_coord"])
+        snrStats = getStats(allSnrs,["SNR_X", "SNR_Y", "SNR_Z"])
+        ampStats = getStats(allPkAmps,["X_amp", "Y_amp", "Z_amp"])
+        print( coordStats )
+        print( snrStats )
+        print( ampStats )
+        fbase,fext = os.path.splitext(rawFile)
+        if options.statsPrefix:
+            fprefix = options.statsPrefix
+        else:
+            fprefix = os.path.basename(fbase)
+        dirname = os.path.dirname(os.path.abspath(rawFile))
+        statFile = open(dirname + "/" + fprefix + '-stats.txt','w')
+        statFile.write(coordStats + '\n')
+        statFile.write(snrStats + '\n')
+        statFile.write(ampStats)
+        print("Done.")
+        sys.exit(0)
+
     plotter = ProjectionPlot(rdr.fts,rdr.xsize,rdr.fieldOfView,trigTimes=rdr.triggerTimes,
         respArr=rdr.respPhases,timestamps=rdr.timestamps,ysize=rdr.ysize,
         drawStems=(not options.stemless),ylim=options.ylim,pgArr=rdr.pg,
         ecg1Arr=rdr.ecg1,ecg2Arr=rdr.ecg2)
 
 
-        
     #Save to files:
-    if (options.saveplots or options.savecoords or options.statsfile):
+    if (options.saveplots or options.savecoords):
       coordFile = None
       allCoords = []
       allSnrs = []
@@ -310,17 +352,7 @@ def main():
       coordStats = getStats(allCoords,["X_coord", "Y_coord", "Z_coord"])
       snrStats = getStats(allSnrs,["SNR_X", "SNR_Y", "SNR_Z"])
       print( coordStats )
-      print( snrStats )      
-      if options.statsfile:
-          fbase,fext = os.path.splitext(rawFile)
-          if options.statsPrefix:
-              fprefix = options.statsPrefix 
-          else:              
-              fprefix = os.path.basename(fbase)
-          dirname = os.path.dirname(os.path.abspath(rawFile))
-          statFile = open(dirname + "/" + fprefix + '-stats.txt','w')
-          statFile.write(coordStats + '\n')
-          statFile.write(snrStats)
+      print( snrStats )
       print("Done.")
     else: # launch plotter GUI
       plotter.launchGUI()
