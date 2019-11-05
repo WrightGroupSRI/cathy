@@ -279,15 +279,19 @@ def main():
     
     rdr = RawReader(rawFile,legacy_version=int(options.legacy))
     rdr.readFile()
+    if len(rdr.fts) == 0:
+        print("Nothing to see here. Exiting.")
+        sys.exit(0)
 
-    if len(rdr.fts) > 0:
-      plotter = ProjectionPlot(rdr.fts,rdr.xsize,rdr.fieldOfView,trigTimes=rdr.triggerTimes,
+    plotter = ProjectionPlot(rdr.fts,rdr.xsize,rdr.fieldOfView,trigTimes=rdr.triggerTimes,
         respArr=rdr.respPhases,timestamps=rdr.timestamps,ysize=rdr.ysize,
         drawStems=(not options.stemless),ylim=options.ylim,pgArr=rdr.pg,
         ecg1Arr=rdr.ecg1,ecg2Arr=rdr.ecg2)
 
+
+        
     #Save to files:
-    if (options.saveplots or options.savecoords or options.statsfile) and len(rdr.fts) > 0:
+    if (options.saveplots or options.savecoords or options.statsfile):
       coordFile = None
       allCoords = []
       allSnrs = []
@@ -318,10 +322,8 @@ def main():
           statFile.write(coordStats + '\n')
           statFile.write(snrStats)
       print("Done.")
-    elif len(rdr.fts) > 0: # launch plotter GUI
+    else: # launch plotter GUI
       plotter.launchGUI()
-    else:
-      print("Nothing to see here. Exiting.") 
 
     sys.exit(0)
 
