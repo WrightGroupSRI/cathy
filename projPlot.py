@@ -110,6 +110,9 @@ class ProjectionPlot:
           pylab.ylim([0,self.ylim]);
           axes.set_autoscaley_on(False);
           pylab.xticks(self.tick_locs,self.tick_labels);
+          pylab.grid(b=True, which='major', color='#666666', linestyle='-',alpha=0.6)
+          pylab.minorticks_on()
+          pylab.grid(b=True, which='minor', color='#999999', linestyle='-', alpha=0.2)
           if self.drawStems:
            stem_marker, stem_lines, stem_base = pylab.stem([peakInd],[peak],'r-','ro');
            pylab.setp(stem_marker,alpha=0.4)
