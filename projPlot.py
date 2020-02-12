@@ -12,6 +12,7 @@ calculated using a simple max-peak (not a centroid).
 from __future__ import print_function
 import pylab
 from matplotlib.widgets import Button
+from matplotlib.widgets import TextBox
 import snrCalc
 import sys
 import math
@@ -70,6 +71,7 @@ class ProjectionPlot:
         self.usePG = len(pgArr) > 0
         self.useECG1 = len(ecg1Arr) > 0
         self.useECG2 = len(ecg2Arr) > 0
+        self.indexBox = None
         
 
     def showProj(self,frame, savePlots=False, saveCoords=False, coordFile=None):
@@ -78,6 +80,7 @@ class ProjectionPlot:
       - frame: which projection to show
       """
       self.index = frame*self.ysize
+      self.indexBox.set_val(str(frame))
       useTrig = False
       if self.useTrig:
         trig = self.trigTimes[frame]
@@ -174,6 +177,7 @@ class ProjectionPlot:
 
     def redraw(self):
         self.clearStems()
+        self.indexBox.set_val(str(self.index//self.ysize))
         for i in range(0,self.ysize):
             axes = pylab.subplot('1'+str(self.ysize)+str(1+i))
             if (self.mode == "phase"):
@@ -195,17 +199,35 @@ class ProjectionPlot:
             pylab.draw()
 
     def next(self,event):
-        self.index += 3
+        self.index += self.ysize
         self.index = self.index % len(self.fts)
         self.redraw()
 
     def prev(self,event):
-        self.index -= 3
+        self.index -= self.ysize
         self.index = self.index % len(self.fts)
         self.redraw()
     
+    def goFrame(self,event):
+        frameText = self.indexBox.text
+        try:
+            frNum = int(frameText)
+        except ValueError:
+            frNum = self.index // self.ysize
+        frNum = abs(frNum) % len(self.fts)
+        self.index = frNum * self.ysize
+        self.redraw()
+
     def launchGUI(self):
+        indBoxAx = pylab.axes([0.1, 0.02, 0.05, 0.075])
+        frames = len(self.fts)//self.ysize - 1
+        self.indexBox = TextBox(indBoxAx,'Frame /' + str(frames),initial='0')
+        axGo = pylab.axes([0.16, 0.02, 0.05, 0.075])
+        goButton = Button(axGo, 'Go')
+        goButton.on_clicked(self.goFrame)
+
         self.showProj(0)
+
         axprev = pylab.axes([0.7, 0.02, 0.1, 0.075])
         axnext = pylab.axes([0.81, 0.02, 0.1, 0.075])
         bnext = Button(axnext, 'Next')
