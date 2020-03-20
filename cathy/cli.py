@@ -2,13 +2,18 @@
 
 import catheter_ukf
 import catheter_utils.cathcoords
+import catheter_utils.projections
 import click
 import click_log
-import contextlib
+import datetime
 import enlighten
 import logging
 import numpy
 import os
+
+from matplotlib import animation
+from matplotlib import pyplot
+
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # set up logging
@@ -161,6 +166,97 @@ def apply_ukf(src, dst, distal, proximal):
 
         logger.info("Done!")
 
+
+@cathy.command()
+@click.argument("path", type=click.Path(exists=True))
+@click_log.simple_verbosity_option()
+def info(path):
+    """Summarize the contents of a projection file."""
+    # maybe we want info from another kind of file in the future
+    _proj_info(path)
+
+
+def _proj_info(path):
+    # Try to read the file, even if it is corrupt. Lets just see what we can see
+    meta, raw, version, corrupt = catheter_utils.projections.read_raw(path, allow_corrupt=True)
+
+    if "fov" in meta.columns:
+        pix = len(raw[0][0])
+        if meta["fov"].nunique() == 1:
+            fov = meta["fov"][0]
+            fov = "{} mm (resolution {} mm)".format(fov, fov/pix)
+        else:
+            min_fov, max_fov = meta["fov"].min(), meta["fov"].max()
+            fov = "{} - {} (resolution {} - {} mm)".format(min_fov, max_fov, min_fov/pix, max_fov/pix)
+    else:
+        fov = "unknown fov"
+
+    if "timestamp" in meta.columns:
+        times = meta["timestamp"]
+        start, end = (datetime.datetime.fromtimestamp(t//1000) for t in (times.min(), times.max()))
+        when = "{} (duration {})".format(start, end-start)
+    else:
+        when = "unknown date and time"
+
+    print("'legacy_version': {}".format(version))
+    print("         corrupt: {}".format(corrupt))
+    print("            when: {}".format(when))
+    print("             fov: {}".format(fov))
+    print("         samples: {}".format(len(raw)))
+    print(" readouts/sample: {}".format(len(raw[0])))
+    print("  pixels/readout: {}".format(len(raw[0][0])))
+
+
+@cathy.command()
+@click.argument("path", type=click.Path(exists=True))
+@click_log.simple_verbosity_option()
+def peek(path):
+    """Display the contents of a projection file."""
+    # maybe we want to peek into another kind of file in the future
+    _proj_peek(path)
+
+
+def _proj_peek(path):
+    # Try to read the file, even if it is corrupt. Lets just see what we can see
+    meta, raw, version, corrupt = catheter_utils.projections.read_raw(path, allow_corrupt=True)
+    if len(raw) == 0 or len(raw[0]) == 0:
+        logger.info("no projections found in the file")
+        return
+
+    def pick(i):
+        fov = meta["fov"][i]
+        fs = catheter_utils.projections.reconstruct(raw[i])
+        xs = numpy.linspace(-fov / 2, fov / 2, len(fs[0]))
+        return fs, xs
+
+    f0, x0 = pick(0)
+    if "timestamp" in meta.columns:
+        interval = numpy.mean(numpy.diff(meta["timestamp"]))
+    else:
+        # if we don't have timestamps assume we are running at approx 24 fps
+        # (for 3 readouts). This won't be real if the readouts are stored
+        # in multiple files (e.g., the FH case) but what can we do?
+        interval = (1000/24) * (len(f0)/3)
+
+    fig = pyplot.figure(figsize=[15, 10])
+    ax = pyplot.axes(xlim=(x0[0], x0[-1]), ylim=(0, numpy.max(f0)))
+
+    plots = []
+    for j in range(len(f0)):
+        p, = ax.plot(x0, f0[j], '-*')
+        plots.append(p)
+
+    def init():
+        pass
+
+    def animate(i):
+        fs, xs = pick(i)
+        for k, plot in enumerate(plots):
+            plot.set_data(xs, fs[k])
+
+    a = animation.FuncAnimation(fig, animate, init_func=init, frames=len(raw), interval=interval, repeat=True)
+    pyplot.show()
+    pyplot.close(fig)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # cathy build-resp
