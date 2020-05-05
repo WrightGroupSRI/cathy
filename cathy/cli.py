@@ -1,25 +1,28 @@
 """Command Line Interface for cathy."""
-
-import click
-import click_log
+import collections
 import datetime
-import enlighten
 import functools
 import logging
-import numpy
 import os
 import random
 import re
-
-from matplotlib import animation, pyplot
+from functools import reduce
 from pathlib import Path
+from pprint import pprint
+
+import click
+import click_log
+import enlighten
+import numpy
+import pandas
+from matplotlib import animation, pyplot
 
 import catheter_ukf
 import catheter_utils.cathcoords
+import catheter_utils.geometry
+import catheter_utils.localization
 import catheter_utils.projections
-
 from . import art
-
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # set up logging
@@ -283,6 +286,9 @@ def _proj_info(path):
     print("  pixels/readout: {}".format(len(raw[0][0])))
 
 
+# def _select_cath_data(toc, coils, )
+
+
 @cathy.command()
 @click.argument("path", type=click.Path(exists=True))
 @click.option("-s", "--scheme", type=click.Choice(["sri", "fh"]), help="Select scheme for visualization.")
@@ -416,67 +422,124 @@ def _proj_peek(path):
     pyplot.close(fig)
 
 
-def _plot_projs(subplots):
-
-    fig, ax = pyplot.subplots(1, 1, sharex="all", sharey="all", figsize=[9, 6])
-
-    def pick(i):
-        fov = meta["fov"][i]
-        fs = catheter_utils.projections.reconstruct(raw[i])
-        xs = numpy.linspace(-fov / 2, fov / 2, len(fs[0]))
-        return fs, xs
-
-    f0, x0 = pick(0)
-    if "timestamp" in meta.columns:
-        interval = numpy.mean(numpy.diff(meta["timestamp"]))
-    else:
-        # if we don't have timestamps assume we are running at approx 24 fps
-        # (for 3 readouts). This won't be real if the readouts are stored
-        # in multiple files (e.g., the FH case) but what can we do?
-        interval = (1000 / 24) * (len(f0) / 3)
-
-    fig = pyplot.figure(figsize=[9, 6])
-    ax = pyplot.axes(xlim=(x0[0], x0[-1]), ylim=(0, numpy.max(f0)))
-
-    plots = []
-    for j in range(len(f0)):
-        p, = ax.plot(x0, f0[j], '-*')
-        plots.append(p)
-
-    def init():
-        pass
-
-    def animate(i):
-        fs, xs = pick(i)
-        for k, plot in enumerate(plots):
-            plot.set_data(xs, fs[k])
-
-    a = animation.FuncAnimation(fig, animate, init_func=init, frames=len(raw), interval=interval, repeat=True)
-    pyplot.show()
-    pyplot.close(fig)
-
-    # subplots = [
-    #    { "name": str,
-    #      "data": [
-    #           { "name": str, "raw": rawdata }
-    #      ]
-    #    }
-    # ]
-    #
-    # subplot name {} axis
-    # subplot data seq { data seq name }
-    #
-
-    pass
-
-
 @cathy.command()
 @click.argument("path", type=click.Path(exists=True))
 @click_log.simple_verbosity_option()
 def localize(path):
-    toc = catheter_utils.projections.discover_raw(path)
-    recordings = sorted(toc.recording.unique())
+    toc, unknowns = catheter_utils.projections.discover_raw(path)
 
+    # filter using a query
+    distal_index = 4
+    proximal_index = 5
+    coil_indices = {distal_index, proximal_index}
+
+    # separable localization algorithms
+    loc_fns = {
+        "peak": catheter_utils.localization.peak,
+        "centroid": catheter_utils.localization.centroid,
+        "centroid_around_peak": catheter_utils.localization.centroid_around_peak,
+        "png": catheter_utils.localization.png,
+    }
+
+    for recording in sorted(toc.recording.unique()):
+        if recording != 0:
+            continue
+
+        data = _read_recording(toc, recording, coil_indices)
+
+        axes = set()
+        loc_data = collections.defaultdict(list)
+        for (coil, axis, dither), (meta, projections) in data.items():
+            axes.add(axis)
+            for (row, signal) in zip(meta.itertuples(), projections):
+                xs = numpy.linspace(-row.fov / 2, row.fov / 2, len(signal))
+                for loc, fn in loc_fns.items():
+                    x = fn(signal, xs)
+                    loc_data[(coil, axis, dither, loc)].append(x)
+
+        for k, v in loc_data.items():
+            loc_data[k] = numpy.array(v)
+
+        for loc in loc_fns.keys():
+            for coil in coil_indices:
+                a = []
+                for axis in range(3):
+                    meta, _ = data[(coil, axis, 0)]
+
+                    timestamp, resp, trig = _get_column_or_zeros(
+                        meta,
+                        ["timestamp", "resp", "trig"]
+                    )
+
+                    a.append(pandas.DataFrame({
+                        "timestamp": timestamp,
+                        f"c{axis}": loc_data[(coil, axis, 0, loc)],
+                        f"resp{axis}": resp,
+                        f"trig{axis}": trig,
+                    }))
+
+                df = reduce(lambda u, v: pandas.merge(u, v, on="timestamp"), a)
+                times = df["timestamp"].values
+                resp = numpy.mean(df[[f"resp{a}" for a in axes]].values, axis=1)
+                trig = numpy.mean(df[[f"trig{a}" for a in axes]].values, axis=1)
+
+                cc = catheter_utils.cathcoords.Cathcoords(
+                    coords=df[["c0", "c1", "c2"]].values,
+                    times=times,
+                    snr=numpy.zeros(len(times)),
+                    trigs=trig,
+                    resps=resp
+                )
+
+                path = Path(loc)
+
+                if not path.exists():
+                    path.mkdir()
+
+                if not path.is_dir():
+                    raise NotADirectoryError()
+
+                fn = catheter_utils.cathcoords.make_filename(recording, coil)
+                fn = path / fn
+
+                catheter_utils.cathcoords.write_file(fn, cc)
+
+
+def _get_column_or_zeros(df, names):
+    res = []
+    n = len(df.index)
+    for name in names:
+        if name in df:
+            res.append(df[name].values)
+        else:
+            res.append(numpy.zeros(n))
+    return res
+
+
+def _read_raw_and_reconstruct(fn):
+    meta, projections, _, _ = catheter_utils.projections.read_raw(fn, allow_corrupt=False)
+    for i, signal in enumerate(projections):
+        projections[i] = catheter_utils.projections.reconstruct(projections[i])
+    return meta, projections
+
+
+def _read_recording(toc, recording, coil_indices):
+    """Read recording data related to the given coils."""
+
+    selection = toc[(toc.recording == recording) & toc.coil.isin(coil_indices)]
+
+    filename_to_data = {
+        fn: _read_raw_and_reconstruct(fn)
+        for fn in sorted(selection.filename.unique())
+    }
+
+    data = {}
+    for row in selection.itertuples():
+        meta, projections = filename_to_data[row.filename]
+        sliced_projections = [p[row.index] for p in projections]
+        data[(row.coil, row.axis, row.dither)] = meta, sliced_projections
+
+    return data
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # cathy build-resp
