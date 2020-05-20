@@ -7,6 +7,7 @@ import os
 import random
 import re
 from functools import reduce
+from operator import getitem
 from pathlib import Path
 from pprint import pprint
 
@@ -286,9 +287,6 @@ def _proj_info(path):
     print("  pixels/readout: {}".format(len(raw[0][0])))
 
 
-# def _select_cath_data(toc, coils, )
-
-
 @cathy.command()
 @click.argument("path", type=click.Path(exists=True))
 @click.option("-s", "--scheme", type=click.Choice(["sri", "fh"]), help="Select scheme for visualization.")
@@ -298,20 +296,21 @@ def _proj_info(path):
 @click.option("-r", "--recording", type=Ints(), help="Select recording(s) for visualization.")
 @click.option("-p", "--pick", type=click.Choice(["rand", "last"]),
               help="How pick a single recording from the final query.")
+@click.option("-x", "--xyz", type=click.Path(exists=True))
 @click_log.simple_verbosity_option()
-def peek(path, pick=None, **kwargs):
+def peek(path, pick=None, xyz=None, **kwargs):
     """Visualize catheter projections.
 
     If PATH is a directory, select relevant projections from available raw files to visualize.
     If PATH is a .projections file, display the contents of the file.
     """
     if Path(path).is_dir():
-        _proj_dir_peek(path, pick=pick, query=kwargs)
+        _proj_dir_peek(path, xyz, pick=pick, query=kwargs)
     else:
         _proj_peek(path)
 
 
-def _proj_dir_peek(path, *, query, pick):
+def _proj_dir_peek(path, xyz, *, query, pick):
     """Peek a .projections directory. Look at available data and select"""
     if pick is None:
         pick = "rand"
@@ -341,6 +340,31 @@ def _proj_dir_peek(path, *, query, pick):
     axes = sorted(selection["axis"].unique())
     filenames = sorted(selection["filename"].unique())
 
+    if xyz is not None:
+        if not Path(xyz).is_dir():
+            logger.warning("xyz should be a directory")
+            xyz = None
+
+    coord_data = {}
+    if xyz is not None:
+        try:
+            cathcoord_files = catheter_utils.cathcoords.discover_files(xyz)
+            for coil in coils:
+                coord_data[coil] = catheter_utils.cathcoords.read_file(
+                    cathcoord_files[selected_recording][coil]
+                )
+        except KeyError:
+            logger.warning("could not find coordinate file in xyz dir")
+            coord_data = {}
+
+    if len(axes) == 3:
+        coordinate_system = catheter_utils.localization.XYZCoordinates()
+    elif len(axes) == 4:
+        coordinate_system = catheter_utils.localization.HadamardCoordinates()
+    else:
+        logger.warning("Unknown coordinate system")
+        coordinate_system = None
+
     number_of_frames = None
     filename_to_artist = {}
     for filename in filenames:
@@ -358,19 +382,40 @@ def _proj_dir_peek(path, *, query, pick):
     else:
         axis_map = {axes[0]: axs}
 
+    def do_nothing(i):
+        pass
+
+    def update_axvline(ln, coil, proj):
+        try:
+            coords = coord_data[coil].coords
+
+            def _fn(i):
+                pcoord = coordinate_system.scanner_to_projection(coords[i])
+                ln.set_xdata(pcoord[proj])
+
+            return _fn
+        except KeyError:
+            return do_nothing
+
     plot_keys = []
     for row in selection.itertuples():
         ax = axis_map[row.axis]
         artist = filename_to_artist[row.filename]
         p, = artist.plot(0, row.index, ax=ax)
-        plot_keys.append((artist, row.index, p))
+
+        if coordinate_system is not None and row.coil in coord_data:
+            ln = ax.axvline(0)
+            plot_keys.append((artist, row.index, p, update_axvline(ln, row.coil, row.axis)))
+        else:
+            plot_keys.append((artist, row.index, p, do_nothing))
 
     def init():
         pass
 
     def animate(i):
-        for artist, index, p in plot_keys:
+        for artist, index, p, pp in plot_keys:
             artist.animate(i, index, plot=p)
+            pp(i)
 
     a = animation.FuncAnimation(
         fig,
@@ -423,75 +468,69 @@ def _proj_peek(path):
 
 
 @cathy.command()
-@click.argument("path", type=click.Path(exists=True))
+@click.argument("src_path", type=click.Path(exists=True))
+@click.argument("dst_path", type=click.Path())
 @click_log.simple_verbosity_option()
-def localize(path):
-    toc, unknowns = catheter_utils.projections.discover_raw(path)
+def localize(src_path, dst_path):
+    toc, unknowns = catheter_utils.projections.discover_raw(src_path)
 
-    # filter using a query
+    dst_path = Path(dst_path)
+    if not dst_path.exists():
+        dst_path.mkdir()
+    if not dst_path.is_dir():
+        raise NotADirectoryError()
+
+    # TODO get these from arguments
     distal_index = 4
     proximal_index = 5
-    coil_indices = {distal_index, proximal_index}
+    dither_index = 0
+    geometry_index = 0
+    coil_indices = [distal_index, proximal_index]
 
-    # separable localization algorithms
+    geo = catheter_utils.geometry.GEOMETRY[geometry_index]
+
     loc_fns = {
-        "peak": catheter_utils.localization.peak,
-        "centroid": catheter_utils.localization.centroid,
-        "centroid_around_peak": catheter_utils.localization.centroid_around_peak,
-        "png": catheter_utils.localization.png,
+        # "peak": _localizer(catheter_utils.localization.peak, None, None),
+        # "centroid": _localizer(catheter_utils.localization.centroid, None, None),
+        # "centroid_around_peak": _localizer(catheter_utils.localization.centroid_around_peak, None, dict(window_radius=7)),
+        # "png": _localizer(catheter_utils.localization.png, None, dict(width=7)),
+        "jpo": _jpo(geo, width=4, sigma=1),
     }
 
     for recording in sorted(toc.recording.unique()):
-        if recording != 0:
-            continue
+        print("pre-processing data")
+        data = FindData(toc, recording, distal_index, proximal_index, dither_index)
 
-        data = _read_recording(toc, recording, coil_indices)
+        for loc_name, loc_fn in loc_fns.items():
+            print(f"processing recording {recording} using {loc_name}")
 
-        axes = set()
-        loc_data = collections.defaultdict(list)
-        for (coil, axis, dither), (meta, projections) in data.items():
-            axes.add(axis)
-            for (row, signal) in zip(meta.itertuples(), projections):
-                xs = numpy.linspace(-row.fov / 2, row.fov / 2, len(signal))
-                for loc, fn in loc_fns.items():
-                    x = fn(signal, xs)
-                    loc_data[(coil, axis, dither, loc)].append(x)
+            distal_coords = []
+            proximal_coords = []
 
-        for k, v in loc_data.items():
-            loc_data[k] = numpy.array(v)
+            for i in range(len(data)):
+                distal_data = data.get_distal_data(i)
+                proximal_data = data.get_proximal_data(i)
 
-        for loc in loc_fns.keys():
-            for coil in coil_indices:
-                a = []
-                for axis in range(3):
-                    meta, _ = data[(coil, axis, 0)]
+                distal, proximal = loc_fn(distal_data, proximal_data)
+                distal_coords.append(distal)
+                proximal_coords.append(proximal)
 
-                    timestamp, resp, trig = _get_column_or_zeros(
-                        meta,
-                        ["timestamp", "resp", "trig"]
-                    )
+            distal_coords = numpy.array(distal_coords)
+            proximal_coords = numpy.array(proximal_coords)
 
-                    a.append(pandas.DataFrame({
-                        "timestamp": timestamp,
-                        f"c{axis}": loc_data[(coil, axis, 0, loc)],
-                        f"resp{axis}": resp,
-                        f"trig{axis}": trig,
-                    }))
-
-                df = reduce(lambda u, v: pandas.merge(u, v, on="timestamp"), a)
-                times = df["timestamp"].values
-                resp = numpy.mean(df[[f"resp{a}" for a in axes]].values, axis=1)
-                trig = numpy.mean(df[[f"trig{a}" for a in axes]].values, axis=1)
-
+            for coil, coords in zip(
+                    [distal_index, proximal_index],
+                    [distal_coords, proximal_coords]
+            ):
                 cc = catheter_utils.cathcoords.Cathcoords(
-                    coords=df[["c0", "c1", "c2"]].values,
-                    times=times,
-                    snr=numpy.zeros(len(times)),
-                    trigs=trig,
-                    resps=resp
+                    coords=coords,
+                    times=data.timestamp,
+                    snr=data.snr,
+                    trigs=data.trig,
+                    resps=data.resp,
                 )
 
-                path = Path(loc)
+                path = dst_path / Path(loc_name)
 
                 if not path.exists():
                     path.mkdir()
@@ -505,15 +544,16 @@ def localize(path):
                 catheter_utils.cathcoords.write_file(fn, cc)
 
 
-def _get_column_or_zeros(df, names):
-    res = []
-    n = len(df.index)
-    for name in names:
-        if name in df:
-            res.append(df[name].values)
-        else:
-            res.append(numpy.zeros(n))
-    return res
+def _localizer(fn, args, kwargs):
+    def _fn(d, p):
+        return catheter_utils.localization.localize_catheter(d, p, fn, args, kwargs)
+    return _fn
+
+
+def _jpo(geo, width=3, sigma=0.5):
+    def _fn(d, p):
+        return catheter_utils.localization.jpo(d, p, geo, width=width, sigma=sigma)
+    return _fn
 
 
 def _read_raw_and_reconstruct(fn):
@@ -523,23 +563,127 @@ def _read_raw_and_reconstruct(fn):
     return meta, projections
 
 
-def _read_recording(toc, recording, coil_indices):
-    """Read recording data related to the given coils."""
+class FindData:
+    def __init__(self, toc, recording, distal, proximal, dither):
+        selection = toc[
+            (toc.recording == recording) &
+            (toc.dither == dither) &
+            toc.coil.isin({distal, proximal})
+        ]
 
-    selection = toc[(toc.recording == recording) & toc.coil.isin(coil_indices)]
+        filename_to_data = {
+            fn: _read_raw_and_reconstruct(fn)
+            for fn in sorted(selection.filename.unique())
+        }
 
-    filename_to_data = {
-        fn: _read_raw_and_reconstruct(fn)
-        for fn in sorted(selection.filename.unique())
-    }
+        # Need to impose some notion of "simultaneity" to form groups of projections.
+        # I tried grouping by timestamp, but FH projections do not share timestamps.
 
-    data = {}
-    for row in selection.itertuples():
-        meta, projections = filename_to_data[row.filename]
-        sliced_projections = [p[row.index] for p in projections]
-        data[(row.coil, row.axis, row.dither)] = meta, sliced_projections
+        n = max(len(meta) for meta, _ in filename_to_data.values())
 
-    return data
+        # Make sure all of the component data sets have the same length.
+        for fn, (meta, projections) in filename_to_data.items():
+            assert len(meta) == len(projections), "???"
+            while len(meta) < n:
+                meta = meta.append(meta.tail(1), ignore_index=True)
+                projections.append(projections[-1])
+            filename_to_data[fn] = meta, projections
+
+        self._timestamp = numpy.mean(
+            numpy.vstack([meta.timestamp for meta, _ in filename_to_data.values()]).T,
+            axis=1,
+        ).astype(int)
+
+        try:
+            self._resp = numpy.mean(
+                numpy.vstack([meta.resp for meta, _ in filename_to_data.values()]).T,
+                axis=1
+            )
+        except AttributeError:
+            self._resp = numpy.zeros(n)
+
+        try:
+            self._trig = numpy.mean(
+                numpy.vstack([meta.trig for meta, _ in filename_to_data.values()]).T,
+                axis=1
+            )
+        except AttributeError:
+            self._trig = numpy.zeros(n)
+
+        data = {}
+        axes = set()
+        n = None
+        for row in selection.itertuples():
+            meta, projections = filename_to_data[row.filename]
+            data[(row.coil, row.axis)] = meta, projections, row.index
+            axes.add(row.axis)
+            if n is None:
+                n = len(projections)
+            else:
+                m = min(n, len(projections))
+                if m != n:
+                    logger.warning("different readout lengths")
+                    n = m
+
+        if n is None:
+            raise ValueError("expected a length")
+
+        if axes == {0, 1, 2}:
+            # this is an SRI style recording
+            pass
+        elif axes == {0, 1, 2, 3}:
+            # this is a FH style recording
+            pass
+        else:
+            raise ValueError("Expected SRI or FH style recordings")
+
+        self._data = data
+        self._axes = sorted(axes)
+        self._distal = distal
+        self._proximal = proximal
+        self._proximal_cache = {}
+        self._distal_cache = {}
+        self._n = n
+
+    def __len__(self):
+        return self._n
+
+    def _get_coil_data(self, coil, i, cache):
+        assert i < len(self), "index out of range"
+        try:
+            return cache[i]
+        except KeyError:
+            data = []
+            for j in range(len(self._axes)):
+                meta, projections, index = self._data[(coil, j)]
+                fov = meta.fov[i]
+                fs = projections[i][index]
+                xs = numpy.linspace(-fov / 2, fov / 2, len(fs))
+                data.append((fs, xs))
+            cache[i] = data
+            return data
+
+    def get_proximal_data(self, i):
+        return self._get_coil_data(self._proximal, i, self._proximal_cache)
+
+    def get_distal_data(self, i):
+        return self._get_coil_data(self._distal, i, self._distal_cache)
+
+    @property
+    def timestamp(self):
+        return self._timestamp
+
+    @property
+    def resp(self):
+        return self._resp
+
+    @property
+    def trig(self):
+        return self._trig
+
+    @property
+    def snr(self):
+        return numpy.zeros(len(self._timestamp))
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # cathy build-resp

@@ -1,6 +1,6 @@
 
 import numpy
-
+import scipy.ndimage
 from matplotlib import pyplot
 
 import catheter_utils.projections
