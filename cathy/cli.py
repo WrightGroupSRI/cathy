@@ -11,6 +11,7 @@ from operator import getitem
 from pathlib import Path
 from pprint import pprint
 
+import pydicom as dicom
 import click
 import click_log
 import enlighten
@@ -23,6 +24,7 @@ import catheter_utils.cathcoords
 import catheter_utils.geometry
 import catheter_utils.localization
 import catheter_utils.projections
+import dicom_art
 from . import art
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -397,14 +399,16 @@ def _proj_dir_peek(path, xyz, *, query, pick):
         except KeyError:
             return do_nothing
 
+    coil_to_color = {4: 'red', 5: 'blue'}
+
     plot_keys = []
     for row in selection.itertuples():
         ax = axis_map[row.axis]
         artist = filename_to_artist[row.filename]
-        p, = artist.plot(0, row.index, ax=ax)
+        p, = artist.plot(0, row.index, ax=ax, plot_kwargs=dict(color=coil_to_color[row.coil]))
 
         if coordinate_system is not None and row.coil in coord_data:
-            ln = ax.axvline(0)
+            ln = ax.axvline(0, color=coil_to_color[row.coil])
             plot_keys.append((artist, row.index, p, update_axvline(ln, row.coil, row.axis)))
         else:
             plot_keys.append((artist, row.index, p, do_nothing))
@@ -470,8 +474,12 @@ def _proj_peek(path):
 @cathy.command()
 @click.argument("src_path", type=click.Path(exists=True))
 @click.argument("dst_path", type=click.Path())
+@click.option("-d", "--distal", "distal_index", type=int, default=5, help="Select distal coil index.")
+@click.option("-p", "--proximal", "proximal_index", type=int, default=4, help="Select proximal coil index.")
+@click.option("-g", "--geometry", "geometry_index", type=int, default=1, help="Select geometry index.")
+@click.option("-z", "--dither", "dither_index", type=int, default=0, help="Select dither index.")
 @click_log.simple_verbosity_option()
-def localize(src_path, dst_path):
+def localize(src_path, dst_path, distal_index, proximal_index, geometry_index, dither_index):
     toc, unknowns = catheter_utils.projections.discover_raw(src_path)
 
     dst_path = Path(dst_path)
@@ -480,29 +488,27 @@ def localize(src_path, dst_path):
     if not dst_path.is_dir():
         raise NotADirectoryError()
 
-    # TODO get these from arguments
-    distal_index = 4
-    proximal_index = 5
-    dither_index = 0
-    geometry_index = 0
-    coil_indices = [distal_index, proximal_index]
-
     geo = catheter_utils.geometry.GEOMETRY[geometry_index]
 
+    # which parameters and where should they come from?
+    width = 3.5
+    sigma = 0.75
+
     loc_fns = {
-        # "peak": _localizer(catheter_utils.localization.peak, None, None),
-        # "centroid": _localizer(catheter_utils.localization.centroid, None, None),
-        # "centroid_around_peak": _localizer(catheter_utils.localization.centroid_around_peak, None, dict(window_radius=7)),
-        # "png": _localizer(catheter_utils.localization.png, None, dict(width=7)),
-        "jpo": _jpo(geo, width=4, sigma=1),
+        "peak": _localizer(catheter_utils.localization.peak, None, None),
+        "centroid": _localizer(catheter_utils.localization.centroid, None, None),
+        "centroid_around_peak": _localizer(catheter_utils.localization.centroid_around_peak, None, dict(window_radius=2*width)),
+        "png": _localizer(catheter_utils.localization.png, None, dict(width=width, sigma=sigma)),
+        "jpng": _jpng(geo, width=width, sigma=sigma),
     }
 
     for recording in sorted(toc.recording.unique()):
-        print("pre-processing data")
+        print(f"--- -- -- -- -- -- -- -- -- -- --")
+        print(f"[{recording}] pre-processing data")
         data = FindData(toc, recording, distal_index, proximal_index, dither_index)
 
         for loc_name, loc_fn in loc_fns.items():
-            print(f"processing recording {recording} using {loc_name}")
+            print(f"[{recording}] processing using {loc_name}")
 
             distal_coords = []
             proximal_coords = []
@@ -550,9 +556,9 @@ def _localizer(fn, args, kwargs):
     return _fn
 
 
-def _jpo(geo, width=3, sigma=0.5):
+def _jpng(geo, width=3.0, sigma=0.5):
     def _fn(d, p):
-        return catheter_utils.localization.jpo(d, p, geo, width=width, sigma=sigma)
+        return catheter_utils.localization.jpng(d, p, geo, width=width, sigma=sigma)
     return _fn
 
 
@@ -683,7 +689,41 @@ class FindData:
 
     @property
     def snr(self):
+        # TODO
         return numpy.zeros(len(self._timestamp))
+
+
+@cathy.command()
+@click.argument("src_path", type=click.Path(exists=True, file_okay=False))
+@click.argument("dicom_file", type=click.Path(exists=True, dir_okay=False))
+@click.option("-d", "--distal", "distal_index", type=int, default=5, help="Select distal coil index.")
+@click.option("-p", "--proximal", "proximal_index", type=int, default=4, help="Select proximal coil index.")
+@click.option("-r", "--recording", "recording_index", type=int, help="Select recording index.")
+@click.option("-g", "--geometry", "geometry_index", type=int, default=1, help="Select geometry index.")
+@click_log.simple_verbosity_option()
+def scatter(src_path, dicom_file, distal_index, proximal_index, recording_index, geometry_index):
+
+    cathcoord_files = catheter_utils.cathcoords.discover_files(src_path)
+    if recording_index is None:
+        recording_index = random.choice(list(cathcoord_files.keys()))
+
+    distal_file = cathcoord_files[recording_index][distal_index]
+    proximal_file = cathcoord_files[recording_index][proximal_index]
+
+    distal, proximal = catheter_utils.cathcoords.read_pair(distal_file, proximal_file)
+    geo = catheter_utils.geometry.GEOMETRY[geometry_index]
+    fit = geo.fit_from_coils_mse(distal.coords, proximal.coords)
+
+    d = dicom.read_file(dicom_file)
+    art = dicom_art.DicomPlotter(d)
+
+    pyplot.figure()
+    art.imshow()
+    art.plot(fit.tip, plot_args=[".g"])
+    art.plot(fit.distal, plot_args=[".b"])
+    art.plot(fit.proximal, plot_args=[".r"])
+    pyplot.show()
+
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # cathy build-resp
