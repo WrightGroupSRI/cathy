@@ -300,7 +300,7 @@ def _proj_info(path):
 @click.option("-p", "--pick", type=click.Choice(["rand", "last"]),
               help="How pick a single recording from the final query.")
 @click.option("-x", "--xyz", type=click.Path(exists=True))
-@click.option("-gt", "--groundtruth", type=click.Path(exists=True, file_okay=True, dir_okay=True), help="Path to ground truth csv.")
+@click.option("-gt", "--groundtruth", type=click.Path(exists=True), help="Path to ground truth csv.")
 @click.option("-en", "--expname", help="str representing experiment name to search ground truth file.")
 @click_log.simple_verbosity_option()
 def peek(path, pick=None, xyz=None, groundtruth=None, expname=None, **kwargs):
@@ -710,7 +710,7 @@ class FindData:
 @click.option("-p", "--proximal", "proximal_index", type=int, default=4, help="Select proximal coil index.")
 @click.option("-r", "--recording", "recording_index", type=int, help="Select recording index.")
 @click.option("-g", "--geometry", "geometry_index", type=int, default=1, help="Select geometry index.")
-@click.option("-gt", "--groundtruth", type=click.Path(exists=True, file_okay=True, dir_okay=True), default=None)
+@click.option("-gt", "--groundtruth", type=click.Path(exists=True), default=None)
 @click.option("-en", "--expname", default=None)
 @click_log.simple_verbosity_option()
 def scatter(src_path, dicom_file, distal_index, proximal_index, recording_index, geometry_index, groundtruth, expname):
@@ -746,6 +746,25 @@ def scatter(src_path, dicom_file, distal_index, proximal_index, recording_index,
         art.plot(fit_gt.proximal, plot_args=["*r"])
     
     pyplot.show()
+
+
+@cathy.command() 
+@click.argument("args", nargs=-1)
+@click.option("-d", "--dest", type=click.Path(exists=True, file_okay=False), default="./")
+@click.option("-en", "--expname", default=None)
+@click.option("-m", "--meta", default="")
+@click.option("-c", "--coil", type=int, default=None)
+@click_log.simple_verbosity_option()
+def gt_tool(args, dest, expname, meta, coil):
+    get_gt.final_coords(args, dest_path=dest, Exp_name=expname, Meta_data=meta, Coil_index=coil)
+
+
+@cathy.command() 
+@click.argument("path", type=click.Path(exists=True, dir_okay=False))
+@click_log.simple_verbosity_option()
+def viewdicom(path):
+    
+    get_gt.quick_view(path)
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
