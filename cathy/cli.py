@@ -25,6 +25,7 @@ import catheter_utils.geometry
 import catheter_utils.localization
 import catheter_utils.projections
 import dicom_art
+from get_gt import __main__ as get_gt
 from . import art
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -299,20 +300,22 @@ def _proj_info(path):
 @click.option("-p", "--pick", type=click.Choice(["rand", "last"]),
               help="How pick a single recording from the final query.")
 @click.option("-x", "--xyz", type=click.Path(exists=True))
+@click.option("-gt", "--groundtruth", type=click.Path(exists=True), help="Path to ground truth csv.")
+@click.option("-en", "--expname", help="str representing experiment name to search ground truth file.")
 @click_log.simple_verbosity_option()
-def peek(path, pick=None, xyz=None, **kwargs):
+def peek(path, pick=None, xyz=None, groundtruth=None, expname=None, **kwargs):
     """Visualize catheter projections.
 
     If PATH is a directory, select relevant projections from available raw files to visualize.
     If PATH is a .projections file, display the contents of the file.
     """
     if Path(path).is_dir():
-        _proj_dir_peek(path, xyz, pick=pick, query=kwargs)
+        _proj_dir_peek(path, xyz, pick=pick, query=kwargs, gt=groundtruth, exp=expname)
     else:
         _proj_peek(path)
 
 
-def _proj_dir_peek(path, xyz, *, query, pick):
+def _proj_dir_peek(path, xyz, *, query, pick, gt=None, exp=None):
     """Peek a .projections directory. Look at available data and select"""
     if pick is None:
         pick = "rand"
@@ -387,13 +390,19 @@ def _proj_dir_peek(path, xyz, *, query, pick):
     def do_nothing(i):
         pass
 
-    def update_axvline(ln, coil, proj):
+    def update_axvline(ln1, ln2, coil, proj):
         try:
             coords = coord_data[coil].coords
 
             def _fn(i):
                 pcoord = coordinate_system.world_to_projection(coords[i])
-                ln.set_xdata(pcoord[proj])
+                ln1.set_xdata(pcoord[proj])
+
+                if (gt != None):
+                    # search the gt file for experiment name and/or coil index to read ground truth
+                    gtcoord = get_gt.read_results(gt, Exp_name=exp, Coil_index=coil) 
+                    gtcoord = coordinate_system.world_to_projection(gtcoord)
+                    ln2.set_xdata(gtcoord[proj])
 
             return _fn
         except KeyError:
@@ -408,8 +417,9 @@ def _proj_dir_peek(path, xyz, *, query, pick):
         p, = artist.plot(0, row.index, ax=ax, plot_kwargs=dict(color=coil_to_color[row.coil]))
 
         if coordinate_system is not None and row.coil in coord_data:
-            ln = ax.axvline(0, color=coil_to_color[row.coil])
-            plot_keys.append((artist, row.index, p, update_axvline(ln, row.coil, row.axis)))
+            ln1 = ax.axvline(0, color=coil_to_color[row.coil])
+            ln2 = ax.axvline(0, color=coil_to_color[row.coil], linestyle='--')
+            plot_keys.append((artist, row.index, p, update_axvline(ln1, ln2, row.coil, row.axis)))
         else:
             plot_keys.append((artist, row.index, p, do_nothing))
 
@@ -710,8 +720,10 @@ class FindData:
 @click.option("-p", "--proximal", "proximal_index", type=int, default=4, help="Select proximal coil index.")
 @click.option("-r", "--recording", "recording_index", type=int, help="Select recording index.")
 @click.option("-g", "--geometry", "geometry_index", type=int, default=1, help="Select geometry index.")
+@click.option("-gt", "--groundtruth", type=click.Path(exists=True), default=None)
+@click.option("-en", "--expname", default=None)
 @click_log.simple_verbosity_option()
-def scatter(src_path, dicom_file, distal_index, proximal_index, recording_index, geometry_index):
+def scatter(src_path, dicom_file, distal_index, proximal_index, recording_index, geometry_index, groundtruth, expname):
 
     cathcoord_files = catheter_utils.cathcoords.discover_files(src_path)
     if recording_index is None:
@@ -724,6 +736,11 @@ def scatter(src_path, dicom_file, distal_index, proximal_index, recording_index,
     geo = catheter_utils.geometry.GEOMETRY[geometry_index]
     fit = geo.fit_from_coils_mse(distal.coords, proximal.coords)
 
+    if groundtruth != None: 
+        distal_gtcoord = get_gt.read_results(groundtruth, Exp_name=expname, Coil_index=distal_index)
+        proximal_gtcoord = get_gt.read_results(groundtruth, Exp_name=expname, Coil_index=proximal_index)
+        fit_gt = geo.fit_from_coils_mse(distal_gtcoord, proximal_gtcoord)
+
     d = dicom.read_file(dicom_file)
     art = dicom_art.DicomPlotter(d)
 
@@ -732,7 +749,32 @@ def scatter(src_path, dicom_file, distal_index, proximal_index, recording_index,
     art.plot(fit.tip, plot_args=[".g"])
     art.plot(fit.distal, plot_args=[".b"])
     art.plot(fit.proximal, plot_args=[".r"])
+
+    if groundtruth != None:
+        art.plot(fit_gt.tip, plot_args=["*g"])
+        art.plot(fit_gt.distal, plot_args=["*b"])
+        art.plot(fit_gt.proximal, plot_args=["*r"])
+    
     pyplot.show()
+
+
+@cathy.command() 
+@click.argument("args", nargs=-1)
+@click.option("-d", "--dest", type=click.Path(exists=True, file_okay=False), default="./")
+@click.option("-en", "--expname", default=None)
+@click.option("-m", "--meta", default="")
+@click.option("-c", "--coil", type=int, default=None)
+@click_log.simple_verbosity_option()
+def gt_tool(args, dest, expname, meta, coil):
+    get_gt.final_coords(args, dest_path=dest, Exp_name=expname, Meta_data=meta, Coil_index=coil)
+
+
+@cathy.command() 
+@click.argument("path", type=click.Path(exists=True, dir_okay=False))
+@click_log.simple_verbosity_option()
+def viewdicom(path):
+    
+    get_gt.quick_view(path)
 
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
