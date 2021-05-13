@@ -762,8 +762,7 @@ def gt_tool(args, dest, expname, meta, coil):
 @cathy.command() 
 @click.argument("path", type=click.Path(exists=True, dir_okay=False))
 @click_log.simple_verbosity_option()
-def viewdicom(path):
-    
+def view_dicom(path):
     get_gt.quick_view(path)
 
 

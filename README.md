@@ -20,3 +20,9 @@ Smooth and fit catheter coordinate data using an unscented Kalman filter develop
 
 ### `cathy scatter`
 Visualize catheter coordinates on a dicom image.
+
+### 'cathy gt-tool'
+Select object on dicom images to export ground truth postions.
+
+## 'cathy view-dicom'
+View dicom image.
