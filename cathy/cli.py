@@ -293,20 +293,21 @@ def _proj_info(path):
 @click.option("-x", "--xyz", type=click.Path(exists=True))
 @click.option("-gt", "--groundtruth", type=click.Path(exists=True), help="Path to ground truth csv.")
 @click.option("-en", "--expname", help="str representing experiment name to search ground truth file.")
+@click.option("-f", "--filename", help="output file")
 @click_log.simple_verbosity_option()
-def peek(path, pick=None, xyz=None, groundtruth=None, expname=None, **kwargs):
+def peek(path, pick=None, xyz=None, groundtruth=None, expname=None, filename=None, **kwargs):
     """Visualize catheter projections.
 
     If PATH is a directory, select relevant projections from available raw files to visualize.
     If PATH is a .projections file, display the contents of the file.
     """
     if Path(path).is_dir():
-        _proj_dir_peek(path, xyz, pick=pick, query=kwargs, gt=groundtruth, exp=expname)
+        _proj_dir_peek(path, xyz, pick=pick, query=kwargs, gt=groundtruth, exp=expname, fname=filename)
     else:
-        _proj_peek(path)
+        _proj_peek(path,fname=filename)
 
 
-def _proj_dir_peek(path, xyz, *, query, pick, gt=None, exp=None):
+def _proj_dir_peek(path, xyz, *, query, pick, gt=None, exp=None, fname=None):
     """Peek a .projections directory. Look at available data and select"""
     if pick is None:
         pick = "rand"
@@ -436,11 +437,15 @@ def _proj_dir_peek(path, xyz, *, query, pick, gt=None, exp=None):
         repeat=True
     )
 
+    if (fname is not None):
+        writer = animation.FFMpegWriter(fps=10)
+        a.save(fname,writer=writer,dpi=200)
+
     pyplot.show()
     pyplot.close(fig)
 
 
-def _proj_peek(path):
+def _proj_peek(path, fname):
     # Try to read the file, even if it is corrupt. Lets just see what we can see
     meta, raw, version, corrupt = catheter_utils.projections.read_raw(path, allow_corrupt=True)
     if len(raw) == 0 or len(raw[0]) == 0:
@@ -473,6 +478,10 @@ def _proj_peek(path):
             artist.animate(i, k, plot=plot)
 
     a = animation.FuncAnimation(fig, animate, init_func=init, frames=len(raw), interval=interval, repeat=True)
+    if (fname is not None):
+        writer = animation.FFMpegWriter(fps=10)
+        a.save(fname,writer=writer,dpi=200)
+
     pyplot.show()
     pyplot.close(fig)
 
