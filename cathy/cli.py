@@ -395,13 +395,13 @@ def _proj_dir_peek(path, xyz, *, query, pick, gt=None, exp=None):
             coords = coord_data[coil].coords
 
             def _fn(i):
-                pcoord = coordinate_system.scanner_to_projection(coords[i])
+                pcoord = coordinate_system.world_to_projection(coords[i])
                 ln1.set_xdata(pcoord[proj])
 
                 if (gt != None):
                     # search the gt file for experiment name and/or coil index to read ground truth
                     gtcoord = get_gt.read_results(gt, Exp_name=exp, Coil_index=coil) 
-                    gtcoord = coordinate_system.scanner_to_projection(gtcoord)
+                    gtcoord = coordinate_system.world_to_projection(gtcoord)
                     ln2.set_xdata(gtcoord[proj])
 
             return _fn
@@ -510,6 +510,7 @@ def localize(src_path, dst_path, distal_index, proximal_index, geometry_index, d
         "centroid_around_peak": _localizer(catheter_utils.localization.centroid_around_peak, None, dict(window_radius=2*width)),
         "png": _localizer(catheter_utils.localization.png, None, dict(width=width, sigma=sigma)),
         "jpng": _jpng(geo, width=width, sigma=sigma),
+        "wjpng": _wjpng(geo, width=width, sigma=sigma),
     }
 
     for recording in sorted(toc.recording.unique()):
@@ -570,6 +571,15 @@ def _jpng(geo, width=3.0, sigma=0.5):
     def _fn(d, p):
         return catheter_utils.localization.jpng(d, p, geo, width=width, sigma=sigma)
     return _fn
+
+
+def _wjpng(geo, width=3.0, sigma=0.5):
+    l = catheter_utils.localization.JointIterativeWeightedCentroid(
+        geometry=geo,
+        centroid_weighting=(lambda xs: catheter_utils.localization.png_density(xs, width, sigma)),
+        err_weighting=catheter_utils.projections.variance,
+    )
+    return l.localize
 
 
 def _read_raw_and_reconstruct(fn):
