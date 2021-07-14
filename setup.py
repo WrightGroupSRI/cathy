@@ -13,6 +13,7 @@ setup(
         "catheter_ukf",
         "dicom_utils",
         "dicom_art",
+        "get_gt"
     ],
     entry_points={"console_scripts": ["cathy=cathy.__main__:main"]},
 )
