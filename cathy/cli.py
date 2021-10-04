@@ -415,7 +415,8 @@ def _proj_dir_peek(path, xyz, *, query, pick, gt=None, exp=None, fname=None, yMa
         colors may be repeated depending on the coil indices being plotted
         '''
         coil_color = cmap(row.coil%cmap.N)
-        p, = artist.plot(0, row.index, ax=ax, plot_kwargs=dict(color=coil_color))
+        p, = artist.plot(0, row.index, ax=ax, plot_kwargs=dict(color=coil_color,label='coil_'+str(row.coil)))
+        ax.legend(loc='upper right')
 
         if coordinate_system is not None and row.coil in coord_data:
             ln1 = ax.axvline(0, color=coil_color)
@@ -486,7 +487,7 @@ def _proj_peek(path, fname, yMax=None):
     if (fname is not None):
         writer = animation.FFMpegWriter(fps=10)
         a.save(fname,writer=writer,dpi=200)
-
+    pyplot.legend(['X','Y','Z'])
     pyplot.show()
     pyplot.close(fig)
 
