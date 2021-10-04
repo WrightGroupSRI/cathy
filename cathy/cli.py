@@ -294,20 +294,22 @@ def _proj_info(path):
 @click.option("-gt", "--groundtruth", type=click.Path(exists=True), help="Path to ground truth csv.")
 @click.option("-en", "--expname", help="str representing experiment name to search ground truth file.")
 @click.option("-f", "--filename", help="output file")
+@click.option("-y", "--ymax", type=int, help="Maximum y axis value")
+
 @click_log.simple_verbosity_option()
-def peek(path, pick=None, xyz=None, groundtruth=None, expname=None, filename=None, **kwargs):
+def peek(path, pick=None, xyz=None, groundtruth=None, expname=None, filename=None, ymax=None, **kwargs):
     """Visualize catheter projections.
 
     If PATH is a directory, select relevant projections from available raw files to visualize.
     If PATH is a .projections file, display the contents of the file.
     """
     if Path(path).is_dir():
-        _proj_dir_peek(path, xyz, pick=pick, query=kwargs, gt=groundtruth, exp=expname, fname=filename)
+        _proj_dir_peek(path, xyz, pick=pick, query=kwargs, gt=groundtruth, exp=expname, fname=filename, yMax=ymax)
     else:
-        _proj_peek(path,fname=filename)
+        _proj_peek(path,fname=filename,yMax=ymax)
 
 
-def _proj_dir_peek(path, xyz, *, query, pick, gt=None, exp=None, fname=None):
+def _proj_dir_peek(path, xyz, *, query, pick, gt=None, exp=None, fname=None, yMax=None):
     """Peek a .projections directory. Look at available data and select"""
     if pick is None:
         pick = "rand"
@@ -405,6 +407,8 @@ def _proj_dir_peek(path, xyz, *, query, pick, gt=None, exp=None, fname=None):
     plot_keys = []
     for row in selection.itertuples():
         ax = axis_map[row.axis]
+        if yMax is not None:
+            ax.set_ylim([0,yMax])
         artist = filename_to_artist[row.filename]
         '''
         Note, coil indices are mapped to a 10-value colormap: coils >= 10 will wrap around so
@@ -445,7 +449,7 @@ def _proj_dir_peek(path, xyz, *, query, pick, gt=None, exp=None, fname=None):
     pyplot.close(fig)
 
 
-def _proj_peek(path, fname):
+def _proj_peek(path, fname, yMax=None):
     # Try to read the file, even if it is corrupt. Lets just see what we can see
     meta, raw, version, corrupt = catheter_utils.projections.read_raw(path, allow_corrupt=True)
     if len(raw) == 0 or len(raw[0]) == 0:
@@ -453,7 +457,8 @@ def _proj_peek(path, fname):
         return
 
     artist = art.ProjectionsAnimator(meta, raw)
-
+    if yMax:
+        artist.signal_max = yMax
     if "timestamp" in meta.columns:
         interval = numpy.mean(numpy.diff(meta["timestamp"]))
     else:
