@@ -24,6 +24,7 @@ import catheter_utils.cathcoords
 import catheter_utils.geometry
 import catheter_utils.localization
 import catheter_utils.projections
+import catheter_utils.metrics
 import dicom_art
 from get_gt import __main__ as get_gt
 from . import art
@@ -258,21 +259,10 @@ def _proj_dir_info(path):
     if nunknown > 0:
         print("  {} unknown .projections files".format(nunknown))
 
-
 def _proj_info(path):
     # Try to read the file, even if it is corrupt. Lets just see what we can see
     meta, raw, version, corrupt = catheter_utils.projections.read_raw(path, allow_corrupt=True)
-
-    if "fov" in meta.columns:
-        pix = len(raw[0][0])
-        if meta["fov"].nunique() == 1:
-            fov = meta["fov"][0]
-            fov = "{} mm (resolution {:.2f} mm)".format(fov, fov/pix)
-        else:
-            min_fov, max_fov = meta["fov"].min(), meta["fov"].max()
-            fov = "{} - {} (resolution {:.2f} - {:.2f} mm)".format(min_fov, max_fov, min_fov/pix, max_fov/pix)
-    else:
-        fov = "unknown fov"
+    fov = catheter_utils.projections.fov_info(meta, raw)
 
     if "timestamp" in meta.columns:
         times = meta["timestamp"]
@@ -408,7 +398,7 @@ def _proj_dir_peek(path, xyz, *, query, pick, gt=None, exp=None):
         except KeyError:
             return do_nothing
 
-    coil_to_color = {4: 'red', 5: 'blue'}
+    coil_to_color = {4: 'red', 5: 'blue', 6: 'green', 7: 'purple'}
 
     plot_keys = []
     for row in selection.itertuples():
@@ -510,7 +500,7 @@ def localize(src_path, dst_path, distal_index, proximal_index, geometry_index, d
         "centroid_around_peak": _localizer(catheter_utils.localization.centroid_around_peak, None, dict(window_radius=2*width)),
         "png": _localizer(catheter_utils.localization.png, None, dict(width=width, sigma=sigma)),
         "jpng": _jpng(geo, width=width, sigma=sigma),
-        "wjpng": _wjpng(geo, width=width, sigma=sigma),
+        #"wjpng": _wjpng(geo, width=width, sigma=sigma), #unverified
     }
 
     for recording in sorted(toc.recording.unique()):
@@ -775,6 +765,34 @@ def gt_tool(args, dest, expname, meta, coil):
 def view_dicom(path):
     get_gt.quick_view(path)
 
+@cathy.command()
+@click.option("-m", "--mode", help="enter -m calculate or -m plot. 'calculate' generates tracking error csvfile. 'plot' creates bar chart from tracking error csvfile", default=None)
+@click.option("-a", "--algorithms", help="example: --algorithms png,jpng,centroid_around_peak .\nNote: Do not use any spaces between commas", default=None)
+@click.option("-l", "--localization_folder", type=click.Path(exists=True), help="path to localization algorithm results folder", default=None)
+@click.option("--dest", type=click.Path(exists=True, file_okay=False), help="output directory path for trackingerr.csv file. If not specified default is localization algorithm results folder", default=None)
+@click.option("--trackseq_path", "-t", type=click.Path(exists=True), help="path to tracking sequence folder containing .projection files", default=None)
+@click.option("--distal_index", "-d", default=5, help="Distal coil index.")
+@click.option("--proximal_index", "-p", default=4, help="Proximal coil index.")
+@click.option("-z", "--dither", "dither_index", type=int, default=0, help="Select dither index.")
+@click.option("-gt", "--groundtruth", type=click.Path(exists=True), help="path to folder with GroundTruthCoords.csv", default=None)
+@click.option("-en", "--expname", default=None)
+@click.option("-x", "--xaxis", default='algorithm', help="choose x-axis for plotting. Options: algorithm, FOV, dither, trackseq")
+@click_log.simple_verbosity_option()
+def coil_metrics(mode, algorithms, localization_folder, dest, trackseq_path, distal_index, proximal_index, dither_index, groundtruth, expname, xaxis):
+    '''
+    calculate or plot the tracking error of localization algorithms based on bias and 95% ChebyShev (compare stats of groundtruth to localization results)
+    '''
+
+    if (mode=="calculate"):
+        if len(algorithms)>0:
+            catheter_utils.metrics.trackerr(algorithms, localization_folder, dest,  trackseq_path, distal_index, proximal_index, dither_index, groundtruth, expname)
+        else:
+            raise Exception('Must use --a/--algorithms argument: Example: --algorithms png,jpng,centroid_around_peak')
+    elif (mode == 'plot'):
+        catheter_utils.metrics.barplot(dest, expname, xaxis)
+
+    else:
+        print('Must use -m/--mode argument: options-> -m calculate or -m plot')
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # cathy build-resp

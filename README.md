@@ -48,11 +48,14 @@ Apply localization algorithms to process projections files into catheter coordin
 ### `cathy apply-ukf`:
 Smooth and fit catheter coordinate data using an unscented Kalman filter developed for this purpose.
 
+### `cathy coil-metrics`:
+Calculate or plot tracking error results of localization algorithms (output directory from cathy localize).
+
 ### `cathy scatter`:
 Visualize catheter coordinates on a dicom image.
 
 ### `cathy gt-tool`:
-Select object on dicom images to export ground truth postions.
+Select object on dicom images to export ground truth positions.
 
 ### `cathy view-dicom`:
 View dicom image.
