@@ -52,11 +52,14 @@ Smooth and fit catheter coordinate data using an unscented Kalman filter develop
 Calculate or plot tracking error results of localization algorithms (require output directory from cathy localize).
 
 Usage: cathy coil-metrics calc [OPTIONAL: --dest, -d/--distal_index, -p/--proximal_index, -z/--dither_index, --expname] path_to_tracking_sequence_folder path_to_localization_results_folder path_to_groundtruth_folder/ localization_algorithms
+
 Sample Data can be found on ircci-share drive. PATH=ircci-share/ircci/Data/MR_Tracking/trackSpoilers-09July2020
-Example:cathy coil-metrics calc --dest PATH/SRI_April-2020-07-09T12_20_56.765/results -d 7 -p 6 -z 0 --expname VaringSpoilers PATH/SRI_April-2020-07-09T12_20_56.765 PATH/SRI_April-2020-07-09T12_20_56.765/results PATH/SRI_April-2020-07-09T12_20_56.765/groundtruth/ peak,centroid_around_peak,png
+
+Example: cathy coil-metrics calc --dest PATH/SRI_April-2020-07-09T12_20_56.765/results -d 7 -p 6 -z 0 --expname VaringSpoilers PATH/SRI_April-2020-07-09T12_20_56.765 PATH/SRI_April-2020-07-09T12_20_56.765/results PATH/SRI_April-2020-07-09T12_20_56.765/groundtruth/ peak,centroid_around_peak,png
 
 Usage: cathy coil-metrics plotter [OPTIONS: --expname, --xaxis] path_to_folder_with_TrackingErr.csv  
-Note: *TrackingErr.csv created after running cathy coil-metrics calc and located at --dest from cathy coil-metrics calc. If --dest not used located at path_to_localization_results_folder)
+
+Note: *TrackingErr.csv created after running cathy coil-metrics calc and located at --dest from cathy coil-metrics calc. If --dest not used located at path_to_localization_results_folder
 
 ### `cathy scatter`:
 Visualize catheter coordinates on a dicom image.
