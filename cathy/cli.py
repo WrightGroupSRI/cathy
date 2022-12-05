@@ -765,34 +765,48 @@ def gt_tool(args, dest, expname, meta, coil):
 def view_dicom(path):
     get_gt.quick_view(path)
 
-@cathy.command()
-@click.option("-m", "--mode", help="enter -m calculate or -m plot. 'calculate' generates tracking error csvfile. 'plot' creates bar chart from tracking error csvfile", default=None)
-@click.option("-a", "--algorithms", help="example: --algorithms png,jpng,centroid_around_peak .\nNote: Do not use any spaces between commas", default=None)
-@click.option("-l", "--localization_folder", type=click.Path(exists=True), help="path to localization algorithm results folder", default=None)
+@cathy.group()
+def coil_metrics():
+    """Coil Metrics subcommands"""
+    pass
+@coil_metrics.command()
+@click.argument("tracking_sequence_folder", type=click.Path(exists=True))
+@click.argument("localization_folder", type=click.Path(exists=True))
+@click.argument("groundtruth_folder", type=click.Path(exists=True))
+@click.argument("algorithms")
 @click.option("--dest", type=click.Path(exists=True, file_okay=False), help="output directory path for trackingerr.csv file. If not specified default is localization algorithm results folder", default=None)
-@click.option("--trackseq_path", "-t", type=click.Path(exists=True), help="path to tracking sequence folder containing .projection files", default=None)
 @click.option("--distal_index", "-d", default=5, help="Distal coil index.")
 @click.option("--proximal_index", "-p", default=4, help="Proximal coil index.")
 @click.option("-z", "--dither", "dither_index", type=int, default=0, help="Select dither index.")
-@click.option("-gt", "--groundtruth", type=click.Path(exists=True), help="path to folder with GroundTruthCoords.csv", default=None)
-@click.option("-en", "--expname", default=None)
-@click.option("-x", "--xaxis", default='algorithm', help="choose x-axis for plotting. Options: algorithm, FOV, dither, trackseq")
+@click.option("-en", "--expname", default=None, help="experiment name in GroundTruthCoords.csv")
+
 @click_log.simple_verbosity_option()
-def coil_metrics(mode, algorithms, localization_folder, dest, trackseq_path, distal_index, proximal_index, dither_index, groundtruth, expname, xaxis):
+def calc(tracking_sequence_folder, localization_folder, groundtruth_folder, algorithms, dest, distal_index, proximal_index, dither_index, expname):
     '''
     calculate or plot the tracking error of localization algorithms based on bias and 95% ChebyShev (compare stats of groundtruth to localization results)
+
+    \b
+    tracking_sequence_folder -> path to tracking sequence folder containing .projection files
+    localization_folder -> path to localization algorithm results folder
+    groundtruth_folder -> path to folder with GroundTruthCoords.csv ... add "/" to end of path (PATH/GroundTruthFolder/)
+    algorithms -> localization algorithms EX: peak,centroid_around_peak,png .Note: Do not use any spaces between commas
     '''
 
-    if (mode=="calculate"):
-        if len(algorithms)>0:
-            catheter_utils.metrics.trackerr(algorithms, localization_folder, dest,  trackseq_path, distal_index, proximal_index, dither_index, groundtruth, expname)
-        else:
-            raise Exception('Must use --a/--algorithms argument: Example: --algorithms png,jpng,centroid_around_peak')
-    elif (mode == 'plot'):
-        catheter_utils.metrics.barplot(dest, expname, xaxis)
+    catheter_utils.metrics.trackerr(tracking_sequence_folder, localization_folder, groundtruth_folder, algorithms, dest, distal_index, proximal_index, dither_index, expname)
 
-    else:
-        print('Must use -m/--mode argument: options-> -m calculate or -m plot')
+@coil_metrics.command()
+@click.argument("trackerr_folder")
+@click.option("-en", "--expname", default=None, help="experiment name in GroundTruthCoords.csv")
+@click.option("-x", "--xaxis", default='algorithm', type=click.Choice(['algorithm', 'FOV', 'dither', 'trackseq']), help="choose x-axis column for plotting. Options: algorithm, FOV, dither, or trackseq")
+@click_log.simple_verbosity_option()
+def plotter(trackerr_folder, expname, xaxis):
+    '''
+    Barplot of tracking errors
+
+    trackerr_folder -> path to folder containing *trackingerr.csv file
+    '''
+
+    catheter_utils.metrics.barplot(trackerr_folder, expname, xaxis)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # cathy build-resp
