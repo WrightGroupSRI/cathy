@@ -48,6 +48,26 @@ Apply localization algorithms to process projections files into catheter coordin
 ### `cathy apply-ukf`:
 Smooth and fit catheter coordinate data using an unscented Kalman filter developed for this purpose.
 
+### `cathy fft-projections`:
+
+Extract 1D signals from tracking sequence projection files and calculates magnitude of absolute fourier transform and shift of signal. Data outputted as text file and will be saved to the fft subfolder.
+Textfile name template is "fft_signals_coilX_recX_fovXXX_readoutsXXX.txt" (coil index, recording index, field of view (mm), # of readouts).
+
+Format of text file:
+
+FILE_FORMAT_NAME
+
+VERSION
+
+TRACKING SEQUENCE FOLDER NAME
+
+COLUMN HEADERS (i.e axis x, y, z, timestamps ... readout length)
+
+
+usage: cathy fft-projections PATH_TO_TRACKING_SEQUENCE_FOLDER DESTINATION_PATH RECORDING_INDEXES [OPTIONAL: -d/--distal_index, -p/--proximal_index, -z/--dither_index]  
+
+Note: For RECORDING_INDEXES can specify range or individual comma-separated values (ex. 0-2 or 0,1,2)
+
 ### `cathy coil-metrics`:
 Calculate or plot tracking error results of localization algorithms (require output directory from cathy localize).
 
