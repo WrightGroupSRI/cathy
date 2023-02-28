@@ -687,7 +687,7 @@ def plotter(trackerr_folder, expname, xaxis):
 @click.option("-z", "--dither", "dither_index", type=int, default=None, help="Select dither index.")
 
 @click_log.simple_verbosity_option()
-
+#TODO select and manage multiple dither indexes/folders
 def fft_projections(tracking_sequence_folder_path, dest, recording_indexes, distal_index, proximal_index, dither_index):
     '''Get absolute fft signal data from projection files for specified dither and distal & proximal coils and export as text file into fft subfolder
 
