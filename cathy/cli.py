@@ -16,8 +16,10 @@ import click
 import click_log
 import enlighten
 import numpy
-import pandas
+import pandas as pd
 from matplotlib import animation, pyplot
+from datetime import datetime
+import os
 
 import catheter_ukf
 import catheter_utils.cathcoords
@@ -675,6 +677,92 @@ def plotter(trackerr_folder, expname, xaxis):
     '''
 
     catheter_utils.metrics.barplot(trackerr_folder, expname, xaxis)
+
+@cathy.command()
+@click.argument("tracking_sequence_folder_path", type=click.Path(exists=True))
+@click.argument("dest", type=click.Path(exists=True))
+@click.argument("recording_indexes", type=Ints())
+@click.option("-d", "--distal", "distal_index", type=int, default=5, help="Select distal coil index.")
+@click.option("-p", "--proximal", "proximal_index", type=int, default=4, help="Select proximal coil index.")
+@click.option("-z", "--dither", "dither_index", type=int, default=None, help="Select dither index.")
+
+@click_log.simple_verbosity_option()
+#TODO select and manage multiple dither indexes/folders
+def fft_projections(tracking_sequence_folder_path, dest, recording_indexes, distal_index, proximal_index, dither_index):
+    '''Get absolute fft signal data from projection files for specified dither and distal & proximal coils and export as text file into fft subfolder
+
+    \b
+    Textfile name template is "fft_signals_coilX_recX_fovXXX_readoutsXXX.txt" (coil index, recording index, field of view (mm), # of readouts)
+
+    Example of text file format
+    PRJTXT (file format name)
+    1 (version)
+    SRI_April-2020-07-09T12_20_56.765 (tracking sequence folder name)
+    x y z x_timestamp average_timestamp readout_size (column headings: axes... length of each readout)
+    '''
+    dithered = 0
+    subfolder = "fft"
+    # create subfolder and specify by dither index (if applicable)
+    if isinstance(dither_index, int):
+        dithered = dither_index
+        subfolder = "/".join((subfolder, "dith" + str(dithered)))
+    #add subfolder to destination path
+    dest = os.path.join(dest, subfolder)
+    if not os.path.exists(dest):
+        os.makedirs(dest)
+    if not os.path.isdir(dest):
+        raise Exception("Error with saving to output directory. Check output directory path")
+
+    # find projection files
+    discoveries, _ = catheter_utils.projections.discover_raw(tracking_sequence_folder_path)
+    # check that specified coils, recording & dither exist in testdata set
+    assert set({distal_index, proximal_index}).issubset(set(discoveries["coil"].values)) and dithered in discoveries['dither'].values and set(recording_indexes).issubset(set(discoveries['recording'].values)), \
+        f"specified distal/proximal coils {distal_index, proximal_index}. coils found are {set(discoveries['coil'].unique())}. " \
+        f"Recording specified {recording_indexes}. Recording(s) found {set(discoveries['recording'].unique())}. Dither specified {dithered}. Dither(s) found {set(discoveries['dither'].unique())}"
+
+    # extract projections
+    # FindData -> organize projection data & perform absolute fourier transform/shift
+    for record in recording_indexes:
+        data = catheter_utils.projections.FindData(discoveries, record, distal_index, proximal_index, dithered)
+        #extract proximal and distal data
+        pmeta, _, _ = data._data[(proximal_index, 0)]
+        dmeta, _, _ = data._data[(distal_index, 0)]
+        _export_data(dest, tracking_sequence_folder_path.split('/')[-1], distal_index,  "distal", record, pmeta.fov[0], data)
+        _export_data(dest, tracking_sequence_folder_path.split('/')[-1], proximal_index, "proximal", record, dmeta.fov[0], data)
+
+def _export_data(dir, seqname, coil, coil_name, rec, fov, prj):
+    '''
+    export absolute magnitude fft projection signal data to text file
+    '''
+    fs = numpy.array([])
+    columns = ['x', 'y', 'z',  'x-timestamp', 'average-timestamp', 'readout_size']
+    # format and version
+    format = "PRJTXT"
+    version = 1
+    # extract all readout details to an array
+    for readout in range(len(prj)):
+        data = prj._get_coil_data(coil, readout, getattr(prj, f"_{coil_name}_cache"))
+        coords = numpy.array(data)[:, 0, :].T
+        coords_len = numpy.tile(len(coords), (len(coords), 1))
+        timestamp_first= numpy.tile(int(prj.get_timestamp(0,readout)), (len(coords), 1))
+        timestamp_ave = numpy.tile(int(prj._timestamp[readout]), (len(coords), 1))
+        if readout == 0:
+            fs = numpy.column_stack((coords, timestamp_first, timestamp_ave ,coords_len))
+        else:
+            fs = numpy.vstack((fs, numpy.column_stack((coords, timestamp_first, timestamp_ave ,coords_len))))
+
+    # create data table and export as textfile
+    df = pd.DataFrame(fs)
+    if fs.shape[1] > 6: # for hadamard add s axis to header [x, y, z, s, timestamp, timestamp average, readout_size]
+        columns.insert(3, 's')
+    filefft = os.path.join(dir, f"fft_signals_coil{coil}_rec{rec}_fov{int(fov)}_readouts{len(prj)}.txt")
+
+    with open(filefft, "w") as f:
+        f.write(f"{format}\n")
+        f.write(f"{version}\n")
+        f.write(f"{seqname}\n")
+        f.write(f"{' '.join(columns)}\n")
+        df.to_csv(f, header=False, sep=" ", index=False)
 
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 # cathy build-resp
