@@ -18,7 +18,6 @@ import enlighten
 import numpy
 import pandas as pd
 from matplotlib import animation, pyplot
-from datetime import datetime
 import os
 
 import catheter_ukf
