@@ -295,21 +295,28 @@ def _proj_info(path):
 @click.option("-en", "--expname", help="str representing experiment name to search ground truth file.")
 @click.option("-f", "--filename", help="output file")
 @click.option("-y", "--ymax", type=int, help="Maximum y axis value")
+@click.option("-gr", "--grid", default=False, is_flag=True, help="Show a grid on the plot")
 
 @click_log.simple_verbosity_option()
-def peek(path, pick=None, xyz=None, groundtruth=None, expname=None, filename=None, ymax=None, **kwargs):
+def peek(path, pick=None, xyz=None, groundtruth=None, expname=None, filename=None, ymax=None, grid=False, **kwargs):
     """Visualize catheter projections.
 
     If PATH is a directory, select relevant projections from available raw files to visualize.
     If PATH is a .projections file, display the contents of the file.
     """
     if Path(path).is_dir():
-        _proj_dir_peek(path, xyz, pick=pick, query=kwargs, gt=groundtruth, exp=expname, fname=filename, yMax=ymax)
+        _proj_dir_peek(path, xyz, pick=pick, query=kwargs, gt=groundtruth, exp=expname, fname=filename, yMax=ymax, grid=grid)
     else:
-        _proj_peek(path,fname=filename,yMax=ymax)
+        _proj_peek(path,fname=filename,yMax=ymax,grid=grid)
 
+def addGrid(axes):
+    """Add major and minor gridlines to the given plot"""
+    axes.set_axisbelow(True) # Don't allow the axis to be on top of data
+    axes.minorticks_on()
+    axes.grid(which='major', linestyle='-', linewidth='0.5', color='black', alpha=0.8)
+    axes.grid(which='minor', linestyle=':', linewidth='0.4', color='grey', alpha=0.8)
 
-def _proj_dir_peek(path, xyz, *, query, pick, gt=None, exp=None, fname=None, yMax=None):
+def _proj_dir_peek(path, xyz, *, query, pick, gt=None, exp=None, fname=None, yMax=None, grid=False):
     """Peek a .projections directory. Look at available data and select"""
     if pick is None:
         pick = "rand"
@@ -407,6 +414,9 @@ def _proj_dir_peek(path, xyz, *, query, pick, gt=None, exp=None, fname=None, yMa
     plot_keys = []
     for row in selection.itertuples():
         ax = axis_map[row.axis]
+        if grid:
+            addGrid(ax)
+
         if yMax is not None:
             ax.set_ylim([0,yMax])
         artist = filename_to_artist[row.filename]
@@ -450,7 +460,7 @@ def _proj_dir_peek(path, xyz, *, query, pick, gt=None, exp=None, fname=None, yMa
     pyplot.close(fig)
 
 
-def _proj_peek(path, fname, yMax=None):
+def _proj_peek(path, fname, yMax=None, grid=False):
     # Try to read the file, even if it is corrupt. Lets just see what we can see
     meta, raw, version, corrupt = catheter_utils.projections.read_raw(path, allow_corrupt=True)
     if len(raw) == 0 or len(raw[0]) == 0:
@@ -488,6 +498,8 @@ def _proj_peek(path, fname, yMax=None):
         writer = animation.FFMpegWriter(fps=10)
         a.save(fname,writer=writer,dpi=200)
     pyplot.legend(['X','Y','Z'])
+    if grid:
+        addGrid(ax)
     pyplot.show()
     pyplot.close(fig)
 
