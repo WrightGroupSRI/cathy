@@ -1,6 +1,6 @@
 # Hello `cathy`!
 
-This is a command line application for manipulating catheter data from the Wright Group HeartVista catheter tracking sequences. This has been tested under Python 3.6.
+This is a command line application for manipulating catheter MR data recorded from the Wright Group HeartVista catheter tracking sequences. This has been tested under Python 3.6.
 
 ## Installing
 Get this project from the Wright Group gitlab using "git clone *address*", using the address listed on the project page. For example, if you are on the Sunnybrook network and have ssh keys set up:
@@ -29,6 +29,36 @@ Use "git clone" to get each of the above projects in their own directory.   Then
 ### Installing cathy
 Now that you have installed the custom packages, you should be able to install cathy into the same environment. From the cathy project directory (the top-level directory containing this README.md file) run:
 `pip install -e .`
+
+##Windows Documentation
+
+###Installing Python and establishing Jupyter Notebook via Anaconda
+
+Python 3.11 was the version installed from the online download option (python.org). Anaconda was installed from the official Anaconda website (conda version 23.10). Then Jupyter Notebook was launched from Anaconda.
+
+###Establishing Virtual Environments and Python Path
+
+**Step 1**: Prepare your environment
+
+1) Open the '.bashrc' file to ensure no duplicated commands exist and check the export line through command 'source .bashrc'. 
+2) Add Conda and Python to your git bash
+
+**Step 2**: Modify your path
+1) Redirect to your home directory: 'cd'
+2) Get path to Anaconda installation
+3) Update path by replacing the Anaconda installation path in this line: echo 'export PATH="$PATH:(YOUR_PATH):(YOUR_PATH)/Scripts"' >>.bashrc
+4) Create an alias for Python through echo 'alias python="winpty python.exe"'>>.bashrc
+5) Test by checking version of python and conda; if python still does not work, refer to next step 
+
+**Step 3**: Solving Python Potential Issue
+1) Access system settings and navigate to "App Execution Aliases"
+2) Turn off "python.exe" and "python3.exe" App Installers; this might be blocking Python's access to the path
+
+###Installing Key Dependencies for Cathy
+
+1) Note -- install dependencies in the specified order and perform git clone for EACH (**in order**). The git clone link is accessible via the SSH option for each project page
+2) After cloning a dependency, run **'pip install -e'** to download the package.
+3) Continue with the git clone of the dependency of each line 
 
 ## Commands
 
