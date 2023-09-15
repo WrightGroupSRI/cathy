@@ -14,11 +14,15 @@ This setup was tested using the default Windows downloads from the official Pyth
 
 ### Set up paths and aliases
 In the git-bash terminal:
-1. Get the path to anaconda and python: `CDIR=$(dirname $(cygpath $(where anaconda)))`
-2. Update the path for bash: `echo 'export PATH="$PATH:$CDIR:$CDIR/Scripts"' >> ~/.bashrc`
-3. Create an alias for Python: `echo 'alias python="winpty python.exe"'>> ~/.bashrc`
-4. Source the bash file: `source ~/.bashrc`
-5. Test by checking the versions of python and conda: `python --version` and `conda --version`
+1. Get the path to anaconda and python: `CDIR=$(dirname $(find {HARDDRIVE_PATH} -name "_conda.exe" 2>/dev/null))`
+    - NOTE: Replace {HARDDRIVE_PATH} with your hard drive path that has Anaconda installed. Ex. /c (if C: Drive)
+2. echo $CDIR
+    - NOTE: if there is more than one path listed then redefine variable CDIR with the correct path. 
+    - `CDIR={PATH_TO_ANACONDA}` (replace {PATH_TO_ANACONDA} with the correct path)
+3. Update the path for bash: `echo 'export PATH="$PATH:$CDIR:$CDIR/Scripts"' >> ~/.bashrc`
+4. Create an alias for Python: `echo 'alias python="winpty python.exe"'>> ~/.bashrc`
+5. Source the bash file: `source ~/.bashrc`
+6. Test by checking the versions of python and conda: `python --version` and `conda --version`
     - if running python from git-bash does not work with an "Access is denied error", refer to the next section
 
 #### Solving Python Access Issue
@@ -42,6 +46,7 @@ We recommend using [conda](https://conda.io/projects/conda/en/latest/user-guide/
 
 You can start by creating a conda environment with the tested version of Python. We've called it cathyEnv below, but you can name it as you wish:
 `conda create -n cathyEnv python=3.6`
+   - Note: Minimum requirement for Windows is Python 3.8. `conda create -n cathyEnv python=3.8`
 
 Then activate the environment:
 `conda activate cathyEnv`
