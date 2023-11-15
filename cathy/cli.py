@@ -18,7 +18,6 @@ import enlighten
 import numpy
 import pandas as pd
 from matplotlib import animation, pyplot
-from datetime import datetime
 import os
 
 import catheter_ukf
@@ -400,17 +399,22 @@ def _proj_dir_peek(path, xyz, *, query, pick, gt=None, exp=None):
         except KeyError:
             return do_nothing
 
-    coil_to_color = {4: 'red', 5: 'blue', 6: 'green', 7: 'purple'}
+    cmap =pyplot.cm.get_cmap('tab10')
 
     plot_keys = []
     for row in selection.itertuples():
         ax = axis_map[row.axis]
         artist = filename_to_artist[row.filename]
-        p, = artist.plot(0, row.index, ax=ax, plot_kwargs=dict(color=coil_to_color[row.coil]))
+        '''
+        Note, coil indices are mapped to a 10-value colormap: coils >= 10 will wrap around so
+        colors may be repeated depending on the coil indices being plotted
+        '''
+        coil_color = cmap(row.coil%cmap.N)
+        p, = artist.plot(0, row.index, ax=ax, plot_kwargs=dict(color=coil_color))
 
         if coordinate_system is not None and row.coil in coord_data:
-            ln1 = ax.axvline(0, color=coil_to_color[row.coil])
-            ln2 = ax.axvline(0, color=coil_to_color[row.coil], linestyle='--')
+            ln1 = ax.axvline(0, color=coil_color)
+            ln2 = ax.axvline(0, color=coil_color, linestyle='--')
             plot_keys.append((artist, row.index, p, update_axvline(ln1, ln2, row.coil, row.axis)))
         else:
             plot_keys.append((artist, row.index, p, do_nothing))
