@@ -565,7 +565,7 @@ def localize(src_path, dst_path, distal_index, proximal_index, geometry_index, d
                 cc = catheter_utils.cathcoords.Cathcoords(
                     coords=coords,
                     times=data.timestamp,
-                    snr=data.snr,
+                    snr=data.snr[coil],
                     trigs=data.trig,
                     resps=data.resp,
                 )
