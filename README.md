@@ -51,6 +51,8 @@ You can start by creating a conda environment with the tested version of Python.
 Then activate the environment:
 `conda activate cathyEnv`
 
+Subsequent package installations with pip and conda, as detailed in the next section, should be done with this new environment activated.
+
 ### Installing special dependencies
 
 cathy depends on the following packages which are currently only available on the Wright Group gitlab on panoptes. If you are not on the internal network, you will need to [set up remote access](https://wrightgroup.sri.utoronto.ca/tiki-download_file.php?fileId=278) and replace "panoptes.sri.utoronto.ca" in the links below with "localhost":
@@ -63,6 +65,13 @@ cathy depends on the following packages which are currently only available on th
 For each of the dependencies above **in the order shown**, from your terminal:
 1. Perform the git clone. The git clone link is accessible via the SSH option for each project page.
 2. A new project directory will be created after the previous command. Run `pip install -e [project_directory]` to install the package.
+
+#### ffmpeg
+Additionally, ffmpeg needs to be installed for some features. This can be done in either of the following ways:
+
+- To install ffmpeg in a system-level location, you can use your package manager on Linux or follow the instructions on the [official site](https://ffmpeg.org/download.html). Admin privileges on your machine will be required.
+- To install it to a local user directory using conda, use:
+`conda install conda-forge::ffmpeg`
 
 ### Installing cathy
 Now that you have installed the custom packages, you should be able to install cathy into the same environment. From the cathy project directory (the top-level directory containing this README.md file) run:

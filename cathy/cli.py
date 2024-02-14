@@ -293,7 +293,7 @@ def _proj_info(path):
 @click.option("-x", "--xyz", type=click.Path(exists=True))
 @click.option("-gt", "--groundtruth", type=click.Path(exists=True), help="Path to ground truth csv.")
 @click.option("-en", "--expname", help="str representing experiment name to search ground truth file.")
-@click.option("-f", "--filename", help="output file")
+@click.option("-f", "--filepath", help="output file for projection animation. Requires ffmpeg. Supported extensions: .mov, .mp4, .avi")
 @click.option("-y", "--ymax", type=int, help="Maximum y axis value")
 @click.option("-gr", "--grid", default=False, is_flag=True, help="Show a grid on the plot")
 
