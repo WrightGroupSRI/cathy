@@ -524,7 +524,7 @@ def run_localize(src_path, dst_path, distal_index=5, proximal_index=4, geometry_
     # which parameters and where should they come from?
     width = 3.5
     sigma = 0.75
-
+    itr_savepath="/".join((os.fspath(dst_path),datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')+src_path.split('/')[-1]))
     all_loc_fns = {
         "peak": _localizer(catheter_utils.localization.peak, None, None),
         "centroid": _localizer(catheter_utils.localization.centroid, None, None),
@@ -550,14 +550,22 @@ def run_localize(src_path, dst_path, distal_index=5, proximal_index=4, geometry_
 
             distal_coords = []
             proximal_coords = []
-
-            for i in range(len(data)):
+            #pre-allocate size of iterations array
+            data_len=len(data)
+            num_iterations=numpy.empty(data_len)
+            for i in range(data_len):
                 distal_data = data.get_distal_data(i)
                 proximal_data = data.get_proximal_data(i)
 
-                distal, proximal = loc_fn(distal_data, proximal_data)
+                distal, proximal, num_iterations[i] = loc_fn(distal_data, proximal_data)
                 distal_coords.append(distal)
                 proximal_coords.append(proximal)
+            #save iteration stats to text file
+            if(loc_name=="jpng"):
+                savepath=f"{itr_savepath}_rec{recording}_iterationsJPNG.log"
+                with open(savepath, 'a+') as f:
+                    f.write("AVERAGE:{}, MIN:{}, MAX:{}, SIZE:{} \n".format(numpy.mean(num_iterations), numpy.min(num_iterations), numpy.max(num_iterations), data_len))
+                    numpy.savetxt(f, num_iterations, fmt="%.4f", delimiter="\n")
 
             distal_coords = numpy.array(distal_coords)
             proximal_coords = numpy.array(proximal_coords)
