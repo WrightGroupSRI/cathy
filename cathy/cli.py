@@ -303,6 +303,13 @@ def peek(path, pick=None, xyz=None, groundtruth=None, expname=None, filename=Non
 
     If PATH is a directory, select relevant projections from available raw files to visualize.
     If PATH is a .projections file, display the contents of the file.
+
+    The raw data from the .projections file(s) is reconstructed using a fourier transform and the
+    magnitude data is plotted to show a 1d spatial projection. For data from multiple axes, each
+    axis is shown in a different subplot.
+
+    The projection files are typically recorded over several seconds: the plots are animated to show this.
+    Coils, axes, recording numbers, etc, can be selected using command-line options
     """
     if Path(path).is_dir():
         _proj_dir_peek(path, xyz, pick=pick, query=kwargs, gt=groundtruth, exp=expname, fname=filename, yMax=ymax, grid=grid)
