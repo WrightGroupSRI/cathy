@@ -73,6 +73,8 @@ Additionally, ffmpeg needs to be installed for some features. This can be done i
 - To install it to a local user directory using conda, use:
 `conda install conda-forge::ffmpeg`
 
+Note: this has only been tested on Linux
+
 ### Installing cathy
 Now that you have installed the custom packages, you should be able to install cathy into the same environment. From the cathy project directory (the top-level directory containing this README.md file) run:
 `pip install -e .`

@@ -298,7 +298,7 @@ def _proj_info(path):
 @click.option("-gr", "--grid", default=False, is_flag=True, help="Show a grid on the plot")
 
 @click_log.simple_verbosity_option()
-def peek(path, pick=None, xyz=None, groundtruth=None, expname=None, filename=None, ymax=None, grid=False, **kwargs):
+def peek(path, pick=None, xyz=None, groundtruth=None, expname=None, filepath=None, ymax=None, grid=False, **kwargs):
     """Visualize catheter projections.
 
     If PATH is a directory, select relevant projections from available raw files to visualize.
@@ -312,9 +312,9 @@ def peek(path, pick=None, xyz=None, groundtruth=None, expname=None, filename=Non
     Coils, axes, recording numbers, etc, can be selected using command-line options
     """
     if Path(path).is_dir():
-        _proj_dir_peek(path, xyz, pick=pick, query=kwargs, gt=groundtruth, exp=expname, fname=filename, yMax=ymax, grid=grid)
+        _proj_dir_peek(path, xyz, pick=pick, query=kwargs, gt=groundtruth, exp=expname, fname=filepath, yMax=ymax, grid=grid)
     else:
-        _proj_peek(path,fname=filename,yMax=ymax,grid=grid)
+        _proj_peek(path,fname=filepath,yMax=ymax,grid=grid)
 
 def addGrid(axes):
     """Add major and minor gridlines to the given plot"""
