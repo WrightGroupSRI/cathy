@@ -293,20 +293,37 @@ def _proj_info(path):
 @click.option("-x", "--xyz", type=click.Path(exists=True))
 @click.option("-gt", "--groundtruth", type=click.Path(exists=True), help="Path to ground truth csv.")
 @click.option("-en", "--expname", help="str representing experiment name to search ground truth file.")
+@click.option("-f", "--filepath", help="output file for projection animation. Requires ffmpeg. Supported extensions: .mov, .mp4, .avi")
+@click.option("-y", "--ymax", type=int, help="Maximum y axis value")
+@click.option("-gr", "--grid", default=False, is_flag=True, help="Show a grid on the plot")
+
 @click_log.simple_verbosity_option()
-def peek(path, pick=None, xyz=None, groundtruth=None, expname=None, **kwargs):
+def peek(path, pick=None, xyz=None, groundtruth=None, expname=None, filepath=None, ymax=None, grid=False, **kwargs):
     """Visualize catheter projections.
 
     If PATH is a directory, select relevant projections from available raw files to visualize.
     If PATH is a .projections file, display the contents of the file.
+
+    The raw data from the .projections file(s) is reconstructed using a fourier transform and the
+    magnitude data is plotted to show a 1d spatial projection. For data from multiple axes, each
+    axis is shown in a different subplot.
+
+    The projection files are typically recorded over several seconds: the plots are animated to show this.
+    Coils, axes, recording numbers, etc, can be selected using command-line options
     """
     if Path(path).is_dir():
-        _proj_dir_peek(path, xyz, pick=pick, query=kwargs, gt=groundtruth, exp=expname)
+        _proj_dir_peek(path, xyz, pick=pick, query=kwargs, gt=groundtruth, exp=expname, fname=filepath, yMax=ymax, grid=grid)
     else:
-        _proj_peek(path)
+        _proj_peek(path,fname=filepath,yMax=ymax,grid=grid)
 
+def addGrid(axes):
+    """Add major and minor gridlines to the given plot"""
+    axes.set_axisbelow(True) # Don't allow the axis to be on top of data
+    axes.minorticks_on()
+    axes.grid(which='major', linestyle='-', linewidth='0.5', color='black', alpha=0.8)
+    axes.grid(which='minor', linestyle=':', linewidth='0.4', color='grey', alpha=0.8)
 
-def _proj_dir_peek(path, xyz, *, query, pick, gt=None, exp=None):
+def _proj_dir_peek(path, xyz, *, query, pick, gt=None, exp=None, fname=None, yMax=None, grid=False):
     """Peek a .projections directory. Look at available data and select"""
     if pick is None:
         pick = "rand"
@@ -404,13 +421,19 @@ def _proj_dir_peek(path, xyz, *, query, pick, gt=None, exp=None):
     plot_keys = []
     for row in selection.itertuples():
         ax = axis_map[row.axis]
+        if grid:
+            addGrid(ax)
+
+        if yMax is not None:
+            ax.set_ylim([0,yMax])
         artist = filename_to_artist[row.filename]
         '''
         Note, coil indices are mapped to a 10-value colormap: coils >= 10 will wrap around so
         colors may be repeated depending on the coil indices being plotted
         '''
         coil_color = cmap(row.coil%cmap.N)
-        p, = artist.plot(0, row.index, ax=ax, plot_kwargs=dict(color=coil_color))
+        p, = artist.plot(0, row.index, ax=ax, plot_kwargs=dict(color=coil_color,label='coil_'+str(row.coil)))
+        ax.legend(loc='upper right')
 
         if coordinate_system is not None and row.coil in coord_data:
             ln1 = ax.axvline(0, color=coil_color)
@@ -436,11 +459,15 @@ def _proj_dir_peek(path, xyz, *, query, pick, gt=None, exp=None):
         repeat=True
     )
 
+    if (fname is not None):
+        writer = animation.FFMpegWriter(fps=10)
+        a.save(fname,writer=writer,dpi=200)
+
     pyplot.show()
     pyplot.close(fig)
 
 
-def _proj_peek(path):
+def _proj_peek(path, fname, yMax=None, grid=False):
     # Try to read the file, even if it is corrupt. Lets just see what we can see
     meta, raw, version, corrupt = catheter_utils.projections.read_raw(path, allow_corrupt=True)
     if len(raw) == 0 or len(raw[0]) == 0:
@@ -448,7 +475,8 @@ def _proj_peek(path):
         return
 
     artist = art.ProjectionsAnimator(meta, raw)
-
+    if yMax:
+        artist.signal_max = yMax
     if "timestamp" in meta.columns:
         interval = numpy.mean(numpy.diff(meta["timestamp"]))
     else:
@@ -473,6 +501,12 @@ def _proj_peek(path):
             artist.animate(i, k, plot=plot)
 
     a = animation.FuncAnimation(fig, animate, init_func=init, frames=len(raw), interval=interval, repeat=True)
+    if (fname is not None):
+        writer = animation.FFMpegWriter(fps=10)
+        a.save(fname,writer=writer,dpi=200)
+    pyplot.legend(['X','Y','Z'])
+    if grid:
+        addGrid(ax)
     pyplot.show()
     pyplot.close(fig)
 
@@ -538,7 +572,7 @@ def localize(src_path, dst_path, distal_index, proximal_index, geometry_index, d
                 cc = catheter_utils.cathcoords.Cathcoords(
                     coords=coords,
                     times=data.timestamp,
-                    snr=data.snr,
+                    snr=data.snr[coil],
                     trigs=data.trig,
                     resps=data.resp,
                 )
