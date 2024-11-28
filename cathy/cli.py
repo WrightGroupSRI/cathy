@@ -510,16 +510,7 @@ def _proj_peek(path, fname, yMax=None, grid=False):
     pyplot.show()
     pyplot.close(fig)
 
-
-@cathy.command()
-@click.argument("src_path", type=click.Path(exists=True))
-@click.argument("dst_path", type=click.Path())
-@click.option("-d", "--distal", "distal_index", type=int, default=5, help="Select distal coil index.")
-@click.option("-p", "--proximal", "proximal_index", type=int, default=4, help="Select proximal coil index.")
-@click.option("-g", "--geometry", "geometry_index", type=int, default=1, help="Select geometry index.")
-@click.option("-z", "--dither", "dither_index", type=int, default=0, help="Select dither index.")
-@click_log.simple_verbosity_option()
-def localize(src_path, dst_path, distal_index, proximal_index, geometry_index, dither_index):
+def run_localize(src_path, dst_path, distal_index=5, proximal_index=4, geometry_index=1, dither_index=0, algos=[]):
     toc, unknowns = catheter_utils.projections.discover_raw(src_path)
 
     dst_path = Path(dst_path)
@@ -534,7 +525,7 @@ def localize(src_path, dst_path, distal_index, proximal_index, geometry_index, d
     width = 3.5
     sigma = 0.75
 
-    loc_fns = {
+    all_loc_fns = {
         "peak": _localizer(catheter_utils.localization.peak, None, None),
         "centroid": _localizer(catheter_utils.localization.centroid, None, None),
         "centroid_around_peak": _localizer(catheter_utils.localization.centroid_around_peak, None, dict(window_radius=2*width)),
@@ -542,6 +533,12 @@ def localize(src_path, dst_path, distal_index, proximal_index, geometry_index, d
         "jpng": _jpng(geo, width=width, sigma=sigma),
         #"wjpng": _wjpng(geo, width=width, sigma=sigma), #unverified
     }
+
+    loc_fns = {}
+    if len(algos) == 0:
+        loc_fns = all_loc_fns
+    else:
+        loc_fns = {algo:all_loc_fns[algo] for algo in algos if algo in all_loc_fns}
 
     for recording in sorted(toc.recording.unique()):
         print(f"--- -- -- -- -- -- -- -- -- -- --")
@@ -589,6 +586,18 @@ def localize(src_path, dst_path, distal_index, proximal_index, geometry_index, d
                 fn = path / fn
 
                 catheter_utils.cathcoords.write_file(fn, cc)
+
+
+@cathy.command()
+@click.argument("src_path", type=click.Path(exists=True))
+@click.argument("dst_path", type=click.Path())
+@click.option("-d", "--distal", "distal_index", type=int, default=5, help="Select distal coil index.")
+@click.option("-p", "--proximal", "proximal_index", type=int, default=4, help="Select proximal coil index.")
+@click.option("-g", "--geometry", "geometry_index", type=int, default=1, help="Select geometry index.")
+@click.option("-z", "--dither", "dither_index", type=int, default=0, help="Select dither index.")
+@click_log.simple_verbosity_option()
+def localize(src_path, dst_path, distal_index, proximal_index, geometry_index, dither_index):
+    run_localize(src_path, dst_path, distal_index, proximal_index, geometry_index, dither_index)
 
 
 def _localizer(fn, args, kwargs):
