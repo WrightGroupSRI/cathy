@@ -561,8 +561,8 @@ def run_localize(src_path, dst_path, distal_index=5, proximal_index=4, geometry_
                 distal_coords.append(distal)
                 proximal_coords.append(proximal)
             #save iteration stats to text file
-            if(loc_name=="jpng"):
-                savepath=f"{itr_savepath}_rec{recording}_iterationsJPNG.log"
+            if(loc_name=="jpng" or loc_name=="png"):
+                savepath=f"{itr_savepath}_rec{recording}_iterations_{loc_name}.log"
                 with open(savepath, 'a+') as f:
                     f.write("AVERAGE:{}, MIN:{}, MAX:{}, SIZE:{} \n".format(numpy.mean(num_iterations), numpy.min(num_iterations), numpy.max(num_iterations), data_len))
                     numpy.savetxt(f, num_iterations, fmt="%.4f", delimiter="\n")
