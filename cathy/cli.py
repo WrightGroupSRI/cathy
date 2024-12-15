@@ -510,7 +510,8 @@ def _proj_peek(path, fname, yMax=None, grid=False):
     pyplot.show()
     pyplot.close(fig)
 
-def run_localize(src_path, dst_path, distal_index=5, proximal_index=4, geometry_index=1, dither_index=0, algos=[]):
+def run_localize(src_path, dst_path, distal_index=5, proximal_index=4, geometry_index=1, dither_index=0, algos=[],
+                 output_iterations=False):
     toc, unknowns = catheter_utils.projections.discover_raw(src_path)
 
     dst_path = Path(dst_path)
@@ -561,11 +562,11 @@ def run_localize(src_path, dst_path, distal_index=5, proximal_index=4, geometry_
                 distal_coords.append(distal)
                 proximal_coords.append(proximal)
             #save iteration stats to text file
-            if(loc_name=="jpng" or loc_name=="png"):
+            if(output_iterations and (loc_name=="jpng" or loc_name=="png")):
                 savepath=f"{itr_savepath}_rec{recording}_{loc_name}.log"
                 with open(savepath, 'a+') as f:
-                    f.write("AVERAGE:{}, MIN:{}, MAX:{}, SIZE:{} \n".format(numpy.mean(num_iterations), numpy.min(num_iterations), numpy.max(num_iterations), data_len))
-                    numpy.savetxt(f, num_iterations, fmt="%.4f", delimiter="\n")
+                    f.write("AVERAGE:{:.2f}, MIN:{}, MAX:{}, SIZE:{} \n".format(numpy.mean(num_iterations), int(numpy.min(num_iterations)), int(numpy.max(num_iterations)), data_len))
+                    numpy.savetxt(f, num_iterations, fmt="%d", delimiter="\n")
 
             distal_coords = numpy.array(distal_coords)
             proximal_coords = numpy.array(proximal_coords)
@@ -603,9 +604,10 @@ def run_localize(src_path, dst_path, distal_index=5, proximal_index=4, geometry_
 @click.option("-p", "--proximal", "proximal_index", type=int, default=4, help="Select proximal coil index.")
 @click.option("-g", "--geometry", "geometry_index", type=int, default=1, help="Select geometry index.")
 @click.option("-z", "--dither", "dither_index", type=int, default=0, help="Select dither index.")
+@click.option("-i", "--iterations", "output_iterations", is_flag=True, default=False, help="Output algorithm iterations.")
 @click_log.simple_verbosity_option()
-def localize(src_path, dst_path, distal_index, proximal_index, geometry_index, dither_index):
-    run_localize(src_path, dst_path, distal_index, proximal_index, geometry_index, dither_index)
+def localize(src_path, dst_path, distal_index, proximal_index, geometry_index, dither_index, output_iterations):
+    run_localize(src_path, dst_path, distal_index, proximal_index, geometry_index, dither_index, [], output_iterations)
 
 
 def _localizer(fn, args, kwargs):
