@@ -524,7 +524,7 @@ def run_localize(src_path, dst_path, distal_index=5, proximal_index=4, geometry_
     # which parameters and where should they come from?
     width = 3.5
     sigma = 0.75
-    itr_savepath="/".join((os.fspath(dst_path),datetime.datetime.now().strftime('%Y-%m-%d_%H:%M:%S')+src_path.split('/')[-1]))
+    itr_savepath="/".join((os.fspath(dst_path),'iterations_'+datetime.datetime.now().strftime('%Y-%m-%d_%H_%M_%S')+src_path.split('/')[-1]))
     all_loc_fns = {
         "peak": _localizer(catheter_utils.localization.peak, None, None),
         "centroid": _localizer(catheter_utils.localization.centroid, None, None),
@@ -562,7 +562,7 @@ def run_localize(src_path, dst_path, distal_index=5, proximal_index=4, geometry_
                 proximal_coords.append(proximal)
             #save iteration stats to text file
             if(loc_name=="jpng" or loc_name=="png"):
-                savepath=f"{itr_savepath}_rec{recording}_iterations_{loc_name}.log"
+                savepath=f"{itr_savepath}_rec{recording}_{loc_name}.log"
                 with open(savepath, 'a+') as f:
                     f.write("AVERAGE:{}, MIN:{}, MAX:{}, SIZE:{} \n".format(numpy.mean(num_iterations), numpy.min(num_iterations), numpy.max(num_iterations), data_len))
                     numpy.savetxt(f, num_iterations, fmt="%.4f", delimiter="\n")
