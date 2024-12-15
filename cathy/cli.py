@@ -607,6 +607,16 @@ def run_localize(src_path, dst_path, distal_index=5, proximal_index=4, geometry_
 @click.option("-i", "--iterations", "output_iterations", is_flag=True, default=False, help="Output algorithm iterations.")
 @click_log.simple_verbosity_option()
 def localize(src_path, dst_path, distal_index, proximal_index, geometry_index, dither_index, output_iterations):
+    """Run localization algorithms on raw projections
+
+    This convenience functions runs all the localization algorithms on projections stored under the source path.
+    Assumes distal and proximal coils exist: provide the coil indices & catheter geometry index.
+
+    This will output catheter coordinate text files for each recording using each localization algorithm.
+
+    Optionally, the number of iterations used to converge for each catheter coordinate pair is output in
+    text files. For non-iterative algorithms, this consists of zeroes.
+    """
     run_localize(src_path, dst_path, distal_index, proximal_index, geometry_index, dither_index, [], output_iterations)
 
 
