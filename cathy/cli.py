@@ -526,6 +526,8 @@ def run_localize(src_path, dst_path, distal_index=5, proximal_index=4, geometry_
     width = 3.5
     sigma = 0.75
     itr_savepath="/".join((os.fspath(dst_path),'iterations_'+datetime.datetime.now().strftime('%Y-%m-%d_%H_%M_%S')+src_path.split('/')[-1]))
+    num_iterations_overall = {'png':[], 'jpng':[]}
+
     all_loc_fns = {
         "peak": _localizer(catheter_utils.localization.peak, None, None),
         "centroid": _localizer(catheter_utils.localization.centroid, None, None),
@@ -564,6 +566,7 @@ def run_localize(src_path, dst_path, distal_index=5, proximal_index=4, geometry_
             #save iteration stats to text file
             if(output_iterations and (loc_name=="jpng" or loc_name=="png")):
                 savepath=f"{itr_savepath}_rec{recording}_{loc_name}.log"
+                num_iterations_overall[loc_name] = numpy.concatenate((num_iterations_overall[loc_name],num_iterations))
                 with open(savepath, 'a+') as f:
                     f.write("AVERAGE:{:.2f}, MIN:{}, MAX:{}, SIZE:{} \n".format(numpy.mean(num_iterations), int(numpy.min(num_iterations)), int(numpy.max(num_iterations)), data_len))
                     numpy.savetxt(f, num_iterations, fmt="%d", delimiter="\n")
@@ -595,6 +598,7 @@ def run_localize(src_path, dst_path, distal_index=5, proximal_index=4, geometry_
                 fn = path / fn
 
                 catheter_utils.cathcoords.write_file(fn, cc)
+    return num_iterations_overall
 
 
 @cathy.command()
