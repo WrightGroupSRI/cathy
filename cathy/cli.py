@@ -511,7 +511,7 @@ def _proj_peek(path, fname, yMax=None, grid=False):
     pyplot.close(fig)
 
 def run_localize(src_path, dst_path, distal_index=5, proximal_index=4, geometry_index=1, dither_index=0, algos=[],
-                 output_iterations=False, max_iterations=32):
+                 output_iterations=False, tol=1e-6, max_iterations=32):
     toc, unknowns = catheter_utils.projections.discover_raw(src_path)
 
     dst_path = Path(dst_path)
@@ -532,8 +532,8 @@ def run_localize(src_path, dst_path, distal_index=5, proximal_index=4, geometry_
         "peak": _localizer(catheter_utils.localization.peak, None, None),
         "centroid": _localizer(catheter_utils.localization.centroid, None, None),
         "centroid_around_peak": _localizer(catheter_utils.localization.centroid_around_peak, None, dict(window_radius=2*width)),
-        "png": _localizer(catheter_utils.localization.png, None, dict(width=width, sigma=sigma, max_iter=max_iterations)),
-        "jpng": _jpng(geo, width=width, sigma=sigma, max_iter=max_iterations),
+        "png": _localizer(catheter_utils.localization.png, None, dict(width=width, sigma=sigma, tol=tol, max_iter=max_iterations)),
+        "jpng": _jpng(geo, width=width, sigma=sigma, tol=tol, max_iter=max_iterations),
         #"wjpng": _wjpng(geo, width=width, sigma=sigma), #unverified
     }
 
@@ -630,9 +630,9 @@ def _localizer(fn, args, kwargs):
     return _fn
 
 
-def _jpng(geo, width=3.0, sigma=0.5, max_iter=256):
+def _jpng(geo, width=3.0, sigma=0.5, tol=1e-6, max_iter=256):
     def _fn(d, p):
-        return catheter_utils.localization.jpng(d, p, geo, width=width, sigma=sigma, max_iter=max_iter)
+        return catheter_utils.localization.jpng(d, p, geo, width=width, sigma=sigma, tol=tol, max_iter=max_iter)
     return _fn
 
 
