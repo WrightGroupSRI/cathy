@@ -510,7 +510,8 @@ def _proj_peek(path, fname, yMax=None, grid=False):
     pyplot.show()
     pyplot.close(fig)
 
-def run_localize(src_path, dst_path, distal_index=5, proximal_index=4, geometry_index=1, dither_index=0, algos=[]):
+def run_localize(src_path, dst_path, distal_index=5, proximal_index=4, geometry_index=1, dither_index=0, algos=[],
+                 output_iterations=False, tol=1e-6, max_iterations=32):
     toc, unknowns = catheter_utils.projections.discover_raw(src_path)
 
     dst_path = Path(dst_path)
@@ -524,13 +525,15 @@ def run_localize(src_path, dst_path, distal_index=5, proximal_index=4, geometry_
     # which parameters and where should they come from?
     width = 3.5
     sigma = 0.75
+    itr_savepath="/".join((os.fspath(dst_path),'iterations_'+datetime.datetime.now().strftime('%Y-%m-%d_%H_%M_%S')+src_path.split('/')[-1]))
+    num_iterations_overall = {'png':[], 'jpng':[]}
 
     all_loc_fns = {
         "peak": _localizer(catheter_utils.localization.peak, None, None),
         "centroid": _localizer(catheter_utils.localization.centroid, None, None),
         "centroid_around_peak": _localizer(catheter_utils.localization.centroid_around_peak, None, dict(window_radius=2*width)),
-        "png": _localizer(catheter_utils.localization.png, None, dict(width=width, sigma=sigma)),
-        "jpng": _jpng(geo, width=width, sigma=sigma),
+        "png": _localizer(catheter_utils.localization.png, None, dict(width=width, sigma=sigma, tol=tol, max_iter=max_iterations)),
+        "jpng": _jpng(geo, width=width, sigma=sigma, tol=tol, max_iter=max_iterations),
         #"wjpng": _wjpng(geo, width=width, sigma=sigma), #unverified
     }
 
@@ -550,14 +553,23 @@ def run_localize(src_path, dst_path, distal_index=5, proximal_index=4, geometry_
 
             distal_coords = []
             proximal_coords = []
-
-            for i in range(len(data)):
+            #pre-allocate size of iterations array
+            data_len=len(data)
+            num_iterations=numpy.empty(data_len)
+            for i in range(data_len):
                 distal_data = data.get_distal_data(i)
                 proximal_data = data.get_proximal_data(i)
 
-                distal, proximal = loc_fn(distal_data, proximal_data)
+                distal, proximal, num_iterations[i] = loc_fn(distal_data, proximal_data)
                 distal_coords.append(distal)
                 proximal_coords.append(proximal)
+            #save iteration stats to text file
+            if(output_iterations and (loc_name=="jpng" or loc_name=="png")):
+                savepath=f"{itr_savepath}_rec{recording}_{loc_name}.log"
+                num_iterations_overall[loc_name] = numpy.concatenate((num_iterations_overall[loc_name],num_iterations))
+                with open(savepath, 'a+') as f:
+                    f.write("AVERAGE:{:.2f}, MIN:{}, MAX:{}, SIZE:{} \n".format(numpy.mean(num_iterations), int(numpy.min(num_iterations)), int(numpy.max(num_iterations)), data_len))
+                    numpy.savetxt(f, num_iterations, fmt="%d", delimiter="\n")
 
             distal_coords = numpy.array(distal_coords)
             proximal_coords = numpy.array(proximal_coords)
@@ -586,6 +598,7 @@ def run_localize(src_path, dst_path, distal_index=5, proximal_index=4, geometry_
                 fn = path / fn
 
                 catheter_utils.cathcoords.write_file(fn, cc)
+    return num_iterations_overall
 
 
 @cathy.command()
@@ -595,9 +608,20 @@ def run_localize(src_path, dst_path, distal_index=5, proximal_index=4, geometry_
 @click.option("-p", "--proximal", "proximal_index", type=int, default=4, help="Select proximal coil index.")
 @click.option("-g", "--geometry", "geometry_index", type=int, default=1, help="Select geometry index.")
 @click.option("-z", "--dither", "dither_index", type=int, default=0, help="Select dither index.")
+@click.option("-i", "--iterations", "output_iterations", is_flag=True, default=False, help="Output algorithm iterations.")
 @click_log.simple_verbosity_option()
-def localize(src_path, dst_path, distal_index, proximal_index, geometry_index, dither_index):
-    run_localize(src_path, dst_path, distal_index, proximal_index, geometry_index, dither_index)
+def localize(src_path, dst_path, distal_index, proximal_index, geometry_index, dither_index, output_iterations):
+    """Run localization algorithms on raw projections
+
+    This convenience functions runs all the localization algorithms on projections stored under the source path.
+    Assumes distal and proximal coils exist: provide the coil indices & catheter geometry index.
+
+    This will output catheter coordinate text files for each recording using each localization algorithm.
+
+    Optionally, the number of iterations used to converge for each catheter coordinate pair is output in
+    text files. For non-iterative algorithms, this consists of zeroes.
+    """
+    run_localize(src_path, dst_path, distal_index, proximal_index, geometry_index, dither_index, [], output_iterations)
 
 
 def _localizer(fn, args, kwargs):
@@ -606,9 +630,9 @@ def _localizer(fn, args, kwargs):
     return _fn
 
 
-def _jpng(geo, width=3.0, sigma=0.5):
+def _jpng(geo, width=3.0, sigma=0.5, tol=1e-6, max_iter=256):
     def _fn(d, p):
-        return catheter_utils.localization.jpng(d, p, geo, width=width, sigma=sigma)
+        return catheter_utils.localization.jpng(d, p, geo, width=width, sigma=sigma, tol=tol, max_iter=max_iter)
     return _fn
 
 
