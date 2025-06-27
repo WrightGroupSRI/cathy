@@ -12,5 +12,6 @@ cathy documentation
    :caption: Contents:
    
    readme
+   cathy-cli
    modules
 
