@@ -32,7 +32,11 @@ In the git-bash terminal:
 ## Installing
 Get this project from github using "git clone" or "gh repo clone", using the address from the "Code" button dropdown with the protocol of your choice.
 
-### Virtual Environments
+### Option 1: Build a docker image
+From the code directory:
+`docker build -t cathy-mm .`
+
+### Option 2: Use a Virtual Environment
 You can use [conda](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) or [venv](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/) to isolate your Python development environments. Examples below will use conda 4.6+ (activating environments prior to conda 4.6 varies according to OS, please see the note in the intro of [conda](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html)).
 
 You can start by creating a conda environment with the tested version of Python. We've called it cathyEnv below, but you can name it as you wish:
@@ -44,7 +48,7 @@ Then activate the environment:
 
 Subsequent package installations with pip and conda, as detailed in the next section, should be done with this new environment activated.
 
-### Installing special dependencies
+#### Installing special dependencies
 
 cathy depends on the following packages:
 - [catheter_utils](https://github.com/WrightGroupSRI/catheter_utils)
@@ -57,7 +61,7 @@ For each of the dependencies above **in the order shown**, from your terminal:
 1. Perform the git clone. The git clone link is accessible from the "Code" button dropdown for each project page.
 2. A new project directory will be created after the previous command. Run `pip install -e [project_directory]` to install the package.
 
-#### ffmpeg
+##### ffmpeg
 Additionally, ffmpeg needs to be installed for some features. This can be done in either of the following ways:
 
 - To install ffmpeg in a system-level location, you can use your package manager on Linux or follow the instructions on the [official site](https://ffmpeg.org/download.html). Admin privileges on your machine will be required.
@@ -66,15 +70,16 @@ Additionally, ffmpeg needs to be installed for some features. This can be done i
 
 Note: this has only been tested on Linux
 
-### Installing cathy
+#### Installing cathy
 Now that you have installed the custom packages, you should be able to install cathy into the same environment. From the cathy project directory (the top-level directory containing this README.md file) run:
 `pip install -e .`
 
 ## Commands
+If you are using docker, precede the commands with "docker run --rm" and give permissions as necessary for file access (through bind mounts) and/or your display for graphical output.
 
 Documentation about specific parameters and options is available for each specific command: for example, run `cathy info --help` to find out more about the info command.
 
-*Reminder*: You will need to activate the environment in which you installed cathy in order to run it. If you activate a different environment, exit the terminal, log out of or restart your computer, etc, you will no longer be in cathy's environment.
+*Reminder*: If you are using a virtual environment, you will need to activate the environment in which you installed cathy in order to run it. If you activate a different environment, exit the terminal, log out of or restart your computer, etc, you will no longer be in cathy's environment.
 
 ### `cathy info`:
 Get information about a .projection file, or a directory containing related projections files.
