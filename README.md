@@ -2,42 +2,21 @@
 
 This is a command line application for manipulating catheter MR data recorded from the Wright Group HeartVista catheter tracking sequences. This has been tested under Python 3.6 and 3.8 on Linux, and Python 3.11 on Windows.
 
-## Windows Setup
-The development and testing of cathy has been done on Linux systems and most of the commands outside this section assume a bash terminal. If you are on Windows, the WSL (Windows Subsystem for Linux) can be used: this has not been tested with cathy, but should work similarly to a regular Linux system.
-
-Alternatively, if you want to use the Windows versions of Python and Anaconda, this section describes how to set up a git-bash terminal to use these. If you haven't already, install git on Windows following the [official instructions](https://git-scm.com/download/win); this will install git-bash as well as git.
-
-### Installing Python and Anaconda on Windows
-This setup was tested using the default Windows downloads from the official Python and Anaconda sites:
-- Python 3.11 was installed from the [python website](https://www.python.org/downloads/)
-- Anaconda version 2023.07-1 was installed from the [Anaconda website](https://www.anaconda.com/download)
-
-### Set up paths and aliases
-In the git-bash terminal:
-1. Get the path to anaconda and python: `CDIR=$(dirname $(find {HARDDRIVE_PATH} -name "_conda.exe" 2>/dev/null))`
-    - NOTE: Replace {HARDDRIVE_PATH} with your hard drive path that has Anaconda installed. Ex. /c (if C: Drive)
-2. echo $CDIR
-    - NOTE: if there is more than one path listed then redefine variable CDIR with the correct path. 
-    - `CDIR={PATH_TO_ANACONDA}` (replace {PATH_TO_ANACONDA} with the correct path)
-3. Update the path for bash: `echo 'export PATH="$PATH:$CDIR:$CDIR/Scripts"' >> ~/.bashrc`
-4. Create an alias for Python: `echo 'alias python="winpty python.exe"'>> ~/.bashrc`
-5. Source the bash file: `source ~/.bashrc`
-6. Test by checking the versions of python and conda: `python --version` and `conda --version`
-    - if running python from git-bash does not work with an "Access is denied error", refer to the next section
-
-#### Solving Python Access Issue
-1. Launch Windows Settings and navigate to "App Execution Aliases"
-2. Turn off "python.exe" and "python3.exe" App Installers
-
 ## Installing
 Get this project from github using "git clone" or "gh repo clone", using the address from the "Code" button dropdown with the protocol of your choice.
 
 ### Option 1: Build a docker image
+This will take care of dependencies, but will require installing [Docker](https://www.docker.com/) and setup of permissions to access files and the display at runtime.
+
 From the code directory:
-`docker build -t cathy-mm .`
+```
+docker build -t cathy-mm .
+```
 
 ### Option 2: Use a Virtual Environment
 You can use [conda](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html) or [venv](https://packaging.python.org/guides/installing-using-pip-and-virtual-environments/) to isolate your Python development environments. Examples below will use conda 4.6+ (activating environments prior to conda 4.6 varies according to OS, please see the note in the intro of [conda](https://conda.io/projects/conda/en/latest/user-guide/tasks/manage-environments.html)).
+
+The instructions below assume a bash terminal. For Windows users, see [Windows Setup](WindowsSetup.md) for recommendations.
 
 You can start by creating a conda environment with the tested version of Python. We've called it cathyEnv below, but you can name it as you wish:
 `conda create -n cathyEnv python=3.6`

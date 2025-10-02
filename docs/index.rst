@@ -12,6 +12,7 @@ cathy documentation
    :caption: Contents:
    
    readme
+   windows_setup
    cathy-cli
    modules
 
