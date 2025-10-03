@@ -1,0 +1,1000 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>cathy CLI &#8212; cathy  documentation</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/bootstrap.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+
+  
+  <link href="_static/vendor/fontawesome/6.5.2/css/all.min.css?digest=dfe6caa3a7d634c4db9b" rel="stylesheet" />
+  <link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-solid-900.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-brands-400.woff2" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="_static/vendor/fontawesome/6.5.2/webfonts/fa-regular-400.woff2" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/sphinx-book-theme.css?v=eba8b062" />
+  
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b" />
+  <script src="_static/vendor/fontawesome/6.5.2/js/all.min.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+    <script src="_static/documentation_options.js?v=9eb32ce0"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/scripts/sphinx-book-theme.js?v=887ef09a"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'cathy-cli';</script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="cathy" href="modules.html" />
+    <link rel="prev" title="Windows Setup" href="windows_setup.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-primary-sidebar-checkbox"/>
+  <label class="overlay overlay-primary" for="pst-primary-sidebar-checkbox"></label>
+  
+  <input type="checkbox"
+          class="sidebar-toggle"
+          id="pst-secondary-sidebar-checkbox"/>
+  <label class="overlay overlay-secondary" for="pst-secondary-sidebar-checkbox"></label>
+  
+  <div class="search-button__wrapper">
+    <div class="search-button__overlay"></div>
+    <div class="search-button__search-container">
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         id="search-input"
+         placeholder="Search..."
+         aria-label="Search..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form></div>
+  </div>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <div class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+    
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">cathy  documentation</p>
+  
+</a></div>
+        <div class="sidebar-primary-item">
+
+ <script>
+ document.write(`
+   <button class="btn search-button-field search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass"></i>
+    <span class="search-button__default-text">Search</span>
+    <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+   </button>
+ `);
+ </script></div>
+        <div class="sidebar-primary-item"><nav class="bd-links bd-docs-nav" aria-label="Main">
+    <div class="bd-toc-item navbar-nav active">
+        <p aria-level="2" class="caption" role="heading"><span class="caption-text">Contents:</span></p>
+<ul class="current nav bd-sidenav">
+<li class="toctree-l1"><a class="reference internal" href="readme.html">Hello <code class="docutils literal notranslate"><span class="pre">cathy</span></code>!</a></li>
+<li class="toctree-l1"><a class="reference internal" href="windows_setup.html">Windows Setup</a></li>
+<li class="toctree-l1 current active"><a class="current reference internal" href="#">cathy CLI</a></li>
+<li class="toctree-l1 has-children"><a class="reference internal" href="modules.html">cathy</a><details><summary><span class="toctree-toggle" role="presentation"><i class="fa-solid fa-chevron-down"></i></span></summary><ul>
+<li class="toctree-l2"><a class="reference internal" href="cathy.html">cathy package</a></li>
+</ul>
+</details></li>
+</ul>
+
+    </div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+  </div>
+  
+  <div id="rtd-footer-container"></div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+
+<div class="sbt-scroll-pixel-helper"></div>
+
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item"><button class="sidebar-toggle primary-toggle btn btn-sm" title="Toggle primary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <span class="fa-solid fa-bars"></span>
+</button></div>
+      
+    </div>
+  
+  
+    <div class="header-article-items__end">
+      
+        <div class="header-article-item">
+
+<div class="article-header-buttons">
+
+
+
+
+
+<div class="dropdown dropdown-download-buttons">
+  <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Download this page">
+    <i class="fas fa-download"></i>
+  </button>
+  <ul class="dropdown-menu">
+      
+      
+      
+      <li><a href="_sources/cathy-cli.rst" target="_blank"
+   class="btn btn-sm btn-download-source-button dropdown-item"
+   title="Download source file"
+   data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file"></i>
+  </span>
+<span class="btn__text-container">.rst</span>
+</a>
+</li>
+      
+      
+      
+      
+      <li>
+<button onclick="window.print()"
+  class="btn btn-sm btn-download-pdf-button dropdown-item"
+  title="Print to PDF"
+  data-bs-placement="left" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-file-pdf"></i>
+  </span>
+<span class="btn__text-container">.pdf</span>
+</button>
+</li>
+      
+  </ul>
+</div>
+
+
+
+
+<button onclick="toggleFullScreen()"
+  class="btn btn-sm btn-fullscreen-button"
+  title="Fullscreen mode"
+  data-bs-placement="bottom" data-bs-toggle="tooltip"
+>
+  
+
+<span class="btn__icon-container">
+  <i class="fas fa-expand"></i>
+  </span>
+
+</button>
+
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button" title="light/dark" aria-label="light/dark" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="theme-switch fa-solid fa-sun fa-lg" data-mode="light"></i>
+    <i class="theme-switch fa-solid fa-moon fa-lg" data-mode="dark"></i>
+    <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"></i>
+  </button>
+`);
+</script>
+
+
+<script>
+document.write(`
+  <button class="btn btn-sm pst-navbar-icon search-button search-button__button" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <i class="fa-solid fa-magnifying-glass fa-lg"></i>
+  </button>
+`);
+</script>
+<button class="sidebar-toggle secondary-toggle btn btn-sm" title="Toggle secondary sidebar" data-bs-placement="bottom" data-bs-toggle="tooltip">
+    <span class="fa-solid fa-list"></span>
+</button>
+</div></div>
+      
+    </div>
+  
+</div>
+</div>
+              
+              
+
+<div id="jb-print-docs-body" class="onlyprint">
+    <h1>cathy CLI</h1>
+    <!-- Table of contents -->
+    <div id="print-main-content">
+        <div id="jb-print-toc">
+            
+            <div>
+                <h2> Contents </h2>
+            </div>
+            <nav aria-label="Page">
+                <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cathy">cathy</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cathy-apply-ukf">apply-ukf</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cathy-coil-metrics">coil-metrics</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#cathy-coil-metrics-calc">calc</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#cathy-coil-metrics-plotter">plotter</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cathy-fft-projections">fft-projections</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cathy-gt-tool">gt-tool</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cathy-info">info</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cathy-localize">localize</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cathy-peek">peek</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cathy-scatter">scatter</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cathy-view-dicom">view-dicom</a></li>
+</ul>
+</li>
+</ul>
+            </nav>
+        </div>
+    </div>
+</div>
+
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="cathy-cli">
+<h1>cathy CLI<a class="headerlink" href="#cathy-cli" title="Link to this heading">#</a></h1>
+<section id="cathy">
+<h2>cathy<a class="headerlink" href="#cathy" title="Link to this heading">#</a></h2>
+<p>Command line tools for processing catheter data.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>cathy<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<section id="cathy-apply-ukf">
+<h3>apply-ukf<a class="headerlink" href="#cathy-apply-ukf" title="Link to this heading">#</a></h3>
+<p>Create UKF smoothed versions of cathcoords files.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>cathy<span class="w"> </span>apply-ukf<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SRC<span class="w"> </span>DST
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-apply-ukf-d">
+<span id="cmdoption-cathy-apply-ukf-distal"></span><span class="sig-name descname"><span class="pre">-d</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--distal</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;distal&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-apply-ukf-d" title="Link to this definition">#</a></dt>
+<dd><p>Distal coil index.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-apply-ukf-p">
+<span id="cmdoption-cathy-apply-ukf-proximal"></span><span class="sig-name descname"><span class="pre">-p</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--proximal</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;proximal&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-apply-ukf-p" title="Link to this definition">#</a></dt>
+<dd><p>Proximal coil index.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-apply-ukf-v">
+<span id="cmdoption-cathy-apply-ukf-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-apply-ukf-v" title="Link to this definition">#</a></dt>
+<dd><p>Either CRITICAL, ERROR, WARNING, INFO or DEBUG</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-apply-ukf-arg-SRC">
+<span class="sig-name descname"><span class="pre">SRC</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cathy-apply-ukf-arg-SRC" title="Link to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-apply-ukf-arg-DST">
+<span class="sig-name descname"><span class="pre">DST</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cathy-apply-ukf-arg-DST" title="Link to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="cathy-coil-metrics">
+<h3>coil-metrics<a class="headerlink" href="#cathy-coil-metrics" title="Link to this heading">#</a></h3>
+<p>Coil Metrics subcommands</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>cathy<span class="w"> </span>coil-metrics<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>COMMAND<span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<section id="cathy-coil-metrics-calc">
+<h4>calc<a class="headerlink" href="#cathy-coil-metrics-calc" title="Link to this heading">#</a></h4>
+<p>calculate or plot the tracking error of localization algorithms based on bias and 95% ChebyShev (compare stats of groundtruth to localization results)</p>
+<div class="line-block">
+<div class="line">tracking_sequence_folder -&gt; path to tracking sequence folder containing .projection files</div>
+<div class="line">localization_folder -&gt; path to localization algorithm results folder</div>
+<div class="line">groundtruth_folder -&gt; path to folder with GroundTruthCoords.csv … add “/” to end of path (PATH/GroundTruthFolder/)</div>
+<div class="line">algorithms -&gt; localization algorithms EX: peak,centroid_around_peak,png .Note: Do not use any spaces between commas</div>
+</div>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>cathy<span class="w"> </span>coil-metrics<span class="w"> </span>calc<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>TRACKING_SEQUENCE_FOLDER<span class="w"> </span>LOCALIZATION_FOLDER
+<span class="w">                        </span>GROUNDTRUTH_FOLDER<span class="w"> </span>ALGORITHMS
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-coil-metrics-calc-dest">
+<span class="sig-name descname"><span class="pre">--dest</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;dest&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-coil-metrics-calc-dest" title="Link to this definition">#</a></dt>
+<dd><p>output directory path for trackingerr.csv file. If not specified default is localization algorithm results folder</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-coil-metrics-calc-d">
+<span id="cmdoption-cathy-coil-metrics-calc-distal_index"></span><span class="sig-name descname"><span class="pre">-d</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--distal_index</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;distal_index&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-coil-metrics-calc-d" title="Link to this definition">#</a></dt>
+<dd><p>Distal coil index.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-coil-metrics-calc-p">
+<span id="cmdoption-cathy-coil-metrics-calc-proximal_index"></span><span class="sig-name descname"><span class="pre">-p</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--proximal_index</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;proximal_index&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-coil-metrics-calc-p" title="Link to this definition">#</a></dt>
+<dd><p>Proximal coil index.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-coil-metrics-calc-z">
+<span id="cmdoption-cathy-coil-metrics-calc-dither"></span><span class="sig-name descname"><span class="pre">-z</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--dither</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;dither_index&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-coil-metrics-calc-z" title="Link to this definition">#</a></dt>
+<dd><p>Select dither index.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-coil-metrics-calc-en">
+<span id="cmdoption-cathy-coil-metrics-calc-expname"></span><span class="sig-name descname"><span class="pre">-en</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--expname</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;expname&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-coil-metrics-calc-en" title="Link to this definition">#</a></dt>
+<dd><p>experiment name in GroundTruthCoords.csv</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-coil-metrics-calc-v">
+<span id="cmdoption-cathy-coil-metrics-calc-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-coil-metrics-calc-v" title="Link to this definition">#</a></dt>
+<dd><p>Either CRITICAL, ERROR, WARNING, INFO or DEBUG</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-coil-metrics-calc-arg-TRACKING_SEQUENCE_FOLDER">
+<span class="sig-name descname"><span class="pre">TRACKING_SEQUENCE_FOLDER</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cathy-coil-metrics-calc-arg-TRACKING_SEQUENCE_FOLDER" title="Link to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-coil-metrics-calc-arg-LOCALIZATION_FOLDER">
+<span class="sig-name descname"><span class="pre">LOCALIZATION_FOLDER</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cathy-coil-metrics-calc-arg-LOCALIZATION_FOLDER" title="Link to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-coil-metrics-calc-arg-GROUNDTRUTH_FOLDER">
+<span class="sig-name descname"><span class="pre">GROUNDTRUTH_FOLDER</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cathy-coil-metrics-calc-arg-GROUNDTRUTH_FOLDER" title="Link to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-coil-metrics-calc-arg-ALGORITHMS">
+<span class="sig-name descname"><span class="pre">ALGORITHMS</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cathy-coil-metrics-calc-arg-ALGORITHMS" title="Link to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="cathy-coil-metrics-plotter">
+<h4>plotter<a class="headerlink" href="#cathy-coil-metrics-plotter" title="Link to this heading">#</a></h4>
+<p>Barplot of tracking errors</p>
+<p>trackerr_folder -&gt; path to folder containing <a href="#id1"><span class="problematic" id="id2">*</span></a>trackingerr.csv file</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>cathy<span class="w"> </span>coil-metrics<span class="w"> </span>plotter<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>TRACKERR_FOLDER
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-coil-metrics-plotter-en">
+<span id="cmdoption-cathy-coil-metrics-plotter-expname"></span><span class="sig-name descname"><span class="pre">-en</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--expname</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;expname&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-coil-metrics-plotter-en" title="Link to this definition">#</a></dt>
+<dd><p>experiment name in GroundTruthCoords.csv</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-coil-metrics-plotter-x">
+<span id="cmdoption-cathy-coil-metrics-plotter-xaxis"></span><span class="sig-name descname"><span class="pre">-x</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--xaxis</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;xaxis&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-coil-metrics-plotter-x" title="Link to this definition">#</a></dt>
+<dd><p>choose x-axis column for plotting. Options: algorithm, FOV, dither, or trackseq</p>
+<dl class="field-list simple">
+<dt class="field-odd">Options<span class="colon">:</span></dt>
+<dd class="field-odd"><p>algorithm | FOV | dither | trackseq</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-coil-metrics-plotter-v">
+<span id="cmdoption-cathy-coil-metrics-plotter-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-coil-metrics-plotter-v" title="Link to this definition">#</a></dt>
+<dd><p>Either CRITICAL, ERROR, WARNING, INFO or DEBUG</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-coil-metrics-plotter-arg-TRACKERR_FOLDER">
+<span class="sig-name descname"><span class="pre">TRACKERR_FOLDER</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cathy-coil-metrics-plotter-arg-TRACKERR_FOLDER" title="Link to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+</section>
+<section id="cathy-fft-projections">
+<h3>fft-projections<a class="headerlink" href="#cathy-fft-projections" title="Link to this heading">#</a></h3>
+<p>Get absolute fft signal data from projection files for specified dither and distal &amp; proximal coils and export as text file into fft subfolder</p>
+<div class="line-block">
+<div class="line">Textfile name template is “fft_signals_coilX_recX_fovXXX_readoutsXXX.txt” (coil index, recording index, field of view (mm), # of readouts)</div>
+</div>
+<p>Example of text file format
+PRJTXT (file format name)
+1 (version)
+SRI_April-2020-07-09T12_20_56.765 (tracking sequence folder name)
+x y z x_timestamp average_timestamp readout_size (column headings: axes… length of each readout)</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>cathy<span class="w"> </span>fft-projections<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>TRACKING_SEQUENCE_FOLDER_PATH<span class="w"> </span>DEST
+<span class="w">                      </span>RECORDING_INDEXES
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-fft-projections-d">
+<span id="cmdoption-cathy-fft-projections-distal"></span><span class="sig-name descname"><span class="pre">-d</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--distal</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;distal_index&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-fft-projections-d" title="Link to this definition">#</a></dt>
+<dd><p>Select distal coil index.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-fft-projections-p">
+<span id="cmdoption-cathy-fft-projections-proximal"></span><span class="sig-name descname"><span class="pre">-p</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--proximal</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;proximal_index&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-fft-projections-p" title="Link to this definition">#</a></dt>
+<dd><p>Select proximal coil index.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-fft-projections-z">
+<span id="cmdoption-cathy-fft-projections-dither"></span><span class="sig-name descname"><span class="pre">-z</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--dither</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;dither_index&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-fft-projections-z" title="Link to this definition">#</a></dt>
+<dd><p>Select dither index.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-fft-projections-v">
+<span id="cmdoption-cathy-fft-projections-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-fft-projections-v" title="Link to this definition">#</a></dt>
+<dd><p>Either CRITICAL, ERROR, WARNING, INFO or DEBUG</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-fft-projections-arg-TRACKING_SEQUENCE_FOLDER_PATH">
+<span class="sig-name descname"><span class="pre">TRACKING_SEQUENCE_FOLDER_PATH</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cathy-fft-projections-arg-TRACKING_SEQUENCE_FOLDER_PATH" title="Link to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-fft-projections-arg-DEST">
+<span class="sig-name descname"><span class="pre">DEST</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cathy-fft-projections-arg-DEST" title="Link to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-fft-projections-arg-RECORDING_INDEXES">
+<span class="sig-name descname"><span class="pre">RECORDING_INDEXES</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cathy-fft-projections-arg-RECORDING_INDEXES" title="Link to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="cathy-gt-tool">
+<h3>gt-tool<a class="headerlink" href="#cathy-gt-tool" title="Link to this heading">#</a></h3>
+<p>Runs the interactive ground truth annotation tool</p>
+<p>Determines ground truth coordinates from a set of images via point selection</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>cathy<span class="w"> </span>gt-tool<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span><span class="o">[</span>ARGS<span class="o">]</span>...
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-gt-tool-d">
+<span id="cmdoption-cathy-gt-tool-dest"></span><span class="sig-name descname"><span class="pre">-d</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--dest</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;dest&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-gt-tool-d" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-gt-tool-en">
+<span id="cmdoption-cathy-gt-tool-expname"></span><span class="sig-name descname"><span class="pre">-en</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--expname</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;expname&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-gt-tool-en" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-gt-tool-m">
+<span id="cmdoption-cathy-gt-tool-meta"></span><span class="sig-name descname"><span class="pre">-m</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--meta</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;meta&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-gt-tool-m" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-gt-tool-c">
+<span id="cmdoption-cathy-gt-tool-coil"></span><span class="sig-name descname"><span class="pre">-c</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--coil</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;coil&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-gt-tool-c" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-gt-tool-v">
+<span id="cmdoption-cathy-gt-tool-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-gt-tool-v" title="Link to this definition">#</a></dt>
+<dd><p>Either CRITICAL, ERROR, WARNING, INFO or DEBUG</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-gt-tool-arg-ARGS">
+<span class="sig-name descname"><span class="pre">ARGS</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cathy-gt-tool-arg-ARGS" title="Link to this definition">#</a></dt>
+<dd><p>Optional argument(s)</p>
+</dd></dl>
+
+</section>
+<section id="cathy-info">
+<h3>info<a class="headerlink" href="#cathy-info" title="Link to this heading">#</a></h3>
+<p>Summarize the contents of a projection file.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>cathy<span class="w"> </span>info<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>PATH
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-info-v">
+<span id="cmdoption-cathy-info-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-info-v" title="Link to this definition">#</a></dt>
+<dd><p>Either CRITICAL, ERROR, WARNING, INFO or DEBUG</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-info-arg-PATH">
+<span class="sig-name descname"><span class="pre">PATH</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cathy-info-arg-PATH" title="Link to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="cathy-localize">
+<h3>localize<a class="headerlink" href="#cathy-localize" title="Link to this heading">#</a></h3>
+<p>Run localization algorithms on raw projections</p>
+<p>This convenience functions runs all the localization algorithms on projections stored under the source path.
+Assumes distal and proximal coils exist: provide the coil indices &amp; catheter geometry index.</p>
+<p>This will output catheter coordinate text files for each recording using each localization algorithm.</p>
+<p>Optionally, the number of iterations used to converge for each catheter coordinate pair is output in
+text files. For non-iterative algorithms, this consists of zeroes.</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>cathy<span class="w"> </span>localize<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SRC_PATH<span class="w"> </span>DST_PATH
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-localize-d">
+<span id="cmdoption-cathy-localize-distal"></span><span class="sig-name descname"><span class="pre">-d</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--distal</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;distal_index&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-localize-d" title="Link to this definition">#</a></dt>
+<dd><p>Select distal coil index.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-localize-p">
+<span id="cmdoption-cathy-localize-proximal"></span><span class="sig-name descname"><span class="pre">-p</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--proximal</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;proximal_index&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-localize-p" title="Link to this definition">#</a></dt>
+<dd><p>Select proximal coil index.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-localize-g">
+<span id="cmdoption-cathy-localize-geometry"></span><span class="sig-name descname"><span class="pre">-g</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--geometry</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;geometry_index&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-localize-g" title="Link to this definition">#</a></dt>
+<dd><p>Select geometry index.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-localize-z">
+<span id="cmdoption-cathy-localize-dither"></span><span class="sig-name descname"><span class="pre">-z</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--dither</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;dither_index&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-localize-z" title="Link to this definition">#</a></dt>
+<dd><p>Select dither index.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-localize-i">
+<span id="cmdoption-cathy-localize-iterations"></span><span class="sig-name descname"><span class="pre">-i</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--iterations</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cathy-localize-i" title="Link to this definition">#</a></dt>
+<dd><p>Output algorithm iterations.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-localize-v">
+<span id="cmdoption-cathy-localize-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-localize-v" title="Link to this definition">#</a></dt>
+<dd><p>Either CRITICAL, ERROR, WARNING, INFO or DEBUG</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-localize-arg-SRC_PATH">
+<span class="sig-name descname"><span class="pre">SRC_PATH</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cathy-localize-arg-SRC_PATH" title="Link to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-localize-arg-DST_PATH">
+<span class="sig-name descname"><span class="pre">DST_PATH</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cathy-localize-arg-DST_PATH" title="Link to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="cathy-peek">
+<h3>peek<a class="headerlink" href="#cathy-peek" title="Link to this heading">#</a></h3>
+<p>Visualize catheter projections.</p>
+<p>If PATH is a directory, select relevant projections from available raw files to visualize.
+If PATH is a .projections file, display the contents of the file.</p>
+<p>The raw data from the .projections file(s) is reconstructed using a fourier transform and the
+magnitude data is plotted to show a 1d spatial projection. For data from multiple axes, each
+axis is shown in a different subplot.</p>
+<p>The projection files are typically recorded over several seconds: the plots are animated to show this.
+Coils, axes, recording numbers, etc, can be selected using command-line options</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>cathy<span class="w"> </span>peek<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>PATH
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-peek-s">
+<span id="cmdoption-cathy-peek-scheme"></span><span class="sig-name descname"><span class="pre">-s</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--scheme</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;scheme&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-peek-s" title="Link to this definition">#</a></dt>
+<dd><p>Select scheme for visualization.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Options<span class="colon">:</span></dt>
+<dd class="field-odd"><p>sri | fh</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-peek-c">
+<span id="cmdoption-cathy-peek-coil"></span><span class="sig-name descname"><span class="pre">-c</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--coil</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;coil&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-peek-c" title="Link to this definition">#</a></dt>
+<dd><p>Select coil(s) for visualization.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-peek-a">
+<span id="cmdoption-cathy-peek-axis"></span><span class="sig-name descname"><span class="pre">-a</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--axis</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;axis&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-peek-a" title="Link to this definition">#</a></dt>
+<dd><p>Select axis/axes for visualization.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-peek-d">
+<span id="cmdoption-cathy-peek-dither"></span><span class="sig-name descname"><span class="pre">-d</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--dither</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;dither&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-peek-d" title="Link to this definition">#</a></dt>
+<dd><p>Select dither(s) for visualization</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-peek-r">
+<span id="cmdoption-cathy-peek-recording"></span><span class="sig-name descname"><span class="pre">-r</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--recording</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;recording&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-peek-r" title="Link to this definition">#</a></dt>
+<dd><p>Select recording(s) for visualization.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-peek-p">
+<span id="cmdoption-cathy-peek-pick"></span><span class="sig-name descname"><span class="pre">-p</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--pick</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;pick&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-peek-p" title="Link to this definition">#</a></dt>
+<dd><p>How to pick a single recording from the final query.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Options<span class="colon">:</span></dt>
+<dd class="field-odd"><p>rand | last</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-peek-x">
+<span id="cmdoption-cathy-peek-xyz"></span><span class="sig-name descname"><span class="pre">-x</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--xyz</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;xyz&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-peek-x" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-peek-gt">
+<span id="cmdoption-cathy-peek-groundtruth"></span><span class="sig-name descname"><span class="pre">-gt</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--groundtruth</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;groundtruth&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-peek-gt" title="Link to this definition">#</a></dt>
+<dd><p>Path to ground truth csv.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-peek-en">
+<span id="cmdoption-cathy-peek-expname"></span><span class="sig-name descname"><span class="pre">-en</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--expname</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;expname&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-peek-en" title="Link to this definition">#</a></dt>
+<dd><p>str representing experiment name to search ground truth file.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-peek-f">
+<span id="cmdoption-cathy-peek-filepath"></span><span class="sig-name descname"><span class="pre">-f</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--filepath</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;filepath&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-peek-f" title="Link to this definition">#</a></dt>
+<dd><p>output file for projection animation. Requires ffmpeg. Supported extensions: .mov, .mp4, .avi</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-peek-y">
+<span id="cmdoption-cathy-peek-ymax"></span><span class="sig-name descname"><span class="pre">-y</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--ymax</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;ymax&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-peek-y" title="Link to this definition">#</a></dt>
+<dd><p>Maximum y axis value</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-peek-gr">
+<span id="cmdoption-cathy-peek-grid"></span><span class="sig-name descname"><span class="pre">-gr</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--grid</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cathy-peek-gr" title="Link to this definition">#</a></dt>
+<dd><p>Show a grid on the plot</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-peek-v">
+<span id="cmdoption-cathy-peek-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-peek-v" title="Link to this definition">#</a></dt>
+<dd><p>Either CRITICAL, ERROR, WARNING, INFO or DEBUG</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-peek-arg-PATH">
+<span class="sig-name descname"><span class="pre">PATH</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cathy-peek-arg-PATH" title="Link to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="cathy-scatter">
+<h3>scatter<a class="headerlink" href="#cathy-scatter" title="Link to this heading">#</a></h3>
+<p>Display coordinates overlaid on a dicom image</p>
+<p>Distal, proximal, and extrapolated tip positions from the selected recording will be displayed
+Ground truth coordinates can also be optionally displayed</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>cathy<span class="w"> </span>scatter<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>SRC_PATH<span class="w"> </span>DICOM_FILE
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-scatter-d">
+<span id="cmdoption-cathy-scatter-distal"></span><span class="sig-name descname"><span class="pre">-d</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--distal</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;distal_index&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-scatter-d" title="Link to this definition">#</a></dt>
+<dd><p>Select distal coil index.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-scatter-p">
+<span id="cmdoption-cathy-scatter-proximal"></span><span class="sig-name descname"><span class="pre">-p</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--proximal</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;proximal_index&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-scatter-p" title="Link to this definition">#</a></dt>
+<dd><p>Select proximal coil index.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-scatter-r">
+<span id="cmdoption-cathy-scatter-recording"></span><span class="sig-name descname"><span class="pre">-r</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--recording</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;recording_index&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-scatter-r" title="Link to this definition">#</a></dt>
+<dd><p>Select recording index.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-scatter-g">
+<span id="cmdoption-cathy-scatter-geometry"></span><span class="sig-name descname"><span class="pre">-g</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--geometry</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;geometry_index&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-scatter-g" title="Link to this definition">#</a></dt>
+<dd><p>Select geometry index.</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-scatter-gt">
+<span id="cmdoption-cathy-scatter-groundtruth"></span><span class="sig-name descname"><span class="pre">-gt</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--groundtruth</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;groundtruth&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-scatter-gt" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-scatter-en">
+<span id="cmdoption-cathy-scatter-expname"></span><span class="sig-name descname"><span class="pre">-en</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--expname</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;expname&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-scatter-en" title="Link to this definition">#</a></dt>
+<dd></dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-scatter-v">
+<span id="cmdoption-cathy-scatter-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-scatter-v" title="Link to this definition">#</a></dt>
+<dd><p>Either CRITICAL, ERROR, WARNING, INFO or DEBUG</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-scatter-arg-SRC_PATH">
+<span class="sig-name descname"><span class="pre">SRC_PATH</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cathy-scatter-arg-SRC_PATH" title="Link to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-scatter-arg-DICOM_FILE">
+<span class="sig-name descname"><span class="pre">DICOM_FILE</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cathy-scatter-arg-DICOM_FILE" title="Link to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+<section id="cathy-view-dicom">
+<h3>view-dicom<a class="headerlink" href="#cathy-view-dicom" title="Link to this heading">#</a></h3>
+<p>Display the image from the given dicom file</p>
+<div class="highlight-shell notranslate"><div class="highlight"><pre><span></span>cathy<span class="w"> </span>view-dicom<span class="w"> </span><span class="o">[</span>OPTIONS<span class="o">]</span><span class="w"> </span>PATH
+</pre></div>
+</div>
+<p class="rubric">Options</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-view-dicom-v">
+<span id="cmdoption-cathy-view-dicom-verbosity"></span><span class="sig-name descname"><span class="pre">-v</span></span><span class="sig-prename descclassname"></span><span class="sig-prename descclassname"><span class="pre">,</span> </span><span class="sig-name descname"><span class="pre">--verbosity</span></span><span class="sig-prename descclassname"> <span class="pre">&lt;LVL&gt;</span></span><a class="headerlink" href="#cmdoption-cathy-view-dicom-v" title="Link to this definition">#</a></dt>
+<dd><p>Either CRITICAL, ERROR, WARNING, INFO or DEBUG</p>
+</dd></dl>
+
+<p class="rubric">Arguments</p>
+<dl class="std option">
+<dt class="sig sig-object std" id="cmdoption-cathy-view-dicom-arg-PATH">
+<span class="sig-name descname"><span class="pre">PATH</span></span><span class="sig-prename descclassname"></span><a class="headerlink" href="#cmdoption-cathy-view-dicom-arg-PATH" title="Link to this definition">#</a></dt>
+<dd><p>Required argument</p>
+</dd></dl>
+
+</section>
+</section>
+</section>
+
+
+                </article>
+              
+
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="windows_setup.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">Windows Setup</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="modules.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">cathy</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <div class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+  <div class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> Contents
+  </div>
+  <nav class="bd-toc-nav page-toc">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#cathy">cathy</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cathy-apply-ukf">apply-ukf</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cathy-coil-metrics">coil-metrics</a><ul class="nav section-nav flex-column">
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#cathy-coil-metrics-calc">calc</a></li>
+<li class="toc-h4 nav-item toc-entry"><a class="reference internal nav-link" href="#cathy-coil-metrics-plotter">plotter</a></li>
+</ul>
+</li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cathy-fft-projections">fft-projections</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cathy-gt-tool">gt-tool</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cathy-info">info</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cathy-localize">localize</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cathy-peek">peek</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cathy-scatter">scatter</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cathy-view-dicom">view-dicom</a></li>
+</ul>
+</li>
+</ul>
+  </nav></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+<div class="bd-footer-content__inner container">
+  
+  <div class="footer-item">
+    
+<p class="component-author">
+By Sunnybrook Research Institute
+</p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+
+  <p class="copyright">
+    
+      © Copyright 2025, Sunnybrook Research Institute.
+      <br/>
+    
+  </p>
+
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+  <div class="footer-item">
+    
+  </div>
+  
+</div>
+          </footer>
+        
+
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script src="_static/scripts/bootstrap.js?digest=dfe6caa3a7d634c4db9b"></script>
+<script src="_static/scripts/pydata-sphinx-theme.js?digest=dfe6caa3a7d634c4db9b"></script>
+
+  <footer class="bd-footer">
+  </footer>
+  </body>
+</html>
