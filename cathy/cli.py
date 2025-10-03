@@ -289,7 +289,7 @@ def _proj_info(path):
 @click.option("-d", "--dither", type=Ints(), help="Select dither(s) for visualization")
 @click.option("-r", "--recording", type=Ints(), help="Select recording(s) for visualization.")
 @click.option("-p", "--pick", type=click.Choice(["rand", "last"]),
-              help="How pick a single recording from the final query.")
+              help="How to pick a single recording from the final query.")
 @click.option("-x", "--xyz", type=click.Path(exists=True))
 @click.option("-gt", "--groundtruth", type=click.Path(exists=True), help="Path to ground truth csv.")
 @click.option("-en", "--expname", help="str representing experiment name to search ground truth file.")
@@ -655,6 +655,11 @@ def _wjpng(geo, width=3.0, sigma=0.5):
 @click.option("-en", "--expname", default=None)
 @click_log.simple_verbosity_option()
 def scatter(src_path, dicom_file, distal_index, proximal_index, recording_index, geometry_index, groundtruth, expname):
+    """Display coordinates overlaid on a dicom image
+
+    Distal, proximal, and extrapolated tip positions from the selected recording will be displayed
+    Ground truth coordinates can also be optionally displayed
+    """
 
     cathcoord_files = catheter_utils.cathcoords.discover_files(src_path)
     if recording_index is None:
@@ -697,6 +702,10 @@ def scatter(src_path, dicom_file, distal_index, proximal_index, recording_index,
 @click.option("-c", "--coil", type=int, default=None)
 @click_log.simple_verbosity_option()
 def gt_tool(args, dest, expname, meta, coil):
+    """Runs the interactive ground truth annotation tool
+
+    Determines ground truth coordinates from a set of images via point selection
+    """
     get_gt.final_coords(args, dest_path=dest, Exp_name=expname, Meta_data=meta, Coil_index=coil)
 
 
@@ -704,6 +713,8 @@ def gt_tool(args, dest, expname, meta, coil):
 @click.argument("path", type=click.Path(exists=True, dir_okay=False))
 @click_log.simple_verbosity_option()
 def view_dicom(path):
+    """Display the image from the given dicom file
+    """
     get_gt.quick_view(path)
 
 @cathy.group()
